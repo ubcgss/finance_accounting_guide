@@ -29,21 +29,23 @@ To update multiple expenses at once:
 
 5. Click **Update** to apply the changes to all selected expenses.
 
-## Naming Convention Reminder
+## Project Naming Convention
 
-Record project expenses using the standard format:
-
-```
-ProjectNameF/AYear_MonthYear_Number
-```
-
-**Example**: A report for Baby Hamper expenses in October 2025 would be titled:
+When selecting the project in the bulk update dialog, use the standard naming format:
 
 ```
-BabyHamper2526AY_202510_1
+[Project Type] [Year Range] [Cycle Type]
 ```
 
-See [Creating New Projects]({% link docs/zoho-expense/creating-projects.md %}) for the full naming convention breakdown.
+| Component | Description | Example |
+|-----------|-------------|---------|
+| Project Type | Name of the initiative | `AO Funding` |
+| Year Range | Two-digit start-end years | `25-26` |
+| Cycle Type | AY (Academic Year, Sep–Aug), FY (Fiscal Year, Jun–May), or CY (Calendar Year, Jan–Dec) | `FY` |
+
+**Example**: `AO Funding 25-26 FY`
+
+See [Zoho Projects]({% link docs/zoho-expense/zoho-projects.md %}) for full details on creating projects and naming conventions.
 
 {: .important }
-> Always verify that the Customer and Project fields match before submitting the report. Misassigned expenses create extra work during monthly reconciliation.
+> Always verify that the **Customer** and **Project** fields match before submitting the report. Misassigned expenses create extra work during monthly reconciliation.

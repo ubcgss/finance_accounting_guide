@@ -42,53 +42,9 @@ nav_order: 1
 - When prompted, tick the box to associate the project with all users, and save the project.
 
 ## Tagging Expenses Related to the Project
-   - When recording expenses related to a project, select both the customer and project name for each transaction
-   - **Tip**: Use bulk update to tag multiple expenses at once rather than updating each expense individually.
-
-## How to Create a Project Report
-1. **Navigate to Scheduled Reports**
-   - Direct link: https://books.zoho.com/app/ORGNUMBER#/reports/scheduledlist?report_group=scheduledlist
-   - Or navigate via: Zoho Books → Reports → Scheduled Reports
-2. **Initialize a Custom Report**
-   - Click the blue **Create Custom Report** button in the top right corner
-   - When prompted for report type, select **Account Transactions**
-3. **Configure Report Settings**
-   **Basic Settings:**
-   - **Date Range**: Select the date range for the cycle
-     - GSS Fiscal Year: June 1 – May 31
-     - Academic Year: September 1 – August 31
-     - Calendar Year: January 1 – December 31
-   - **Group By**: Leave ungrouped (select "None")
-   
-   **Advanced Filters:**
-   - Filter by **Project Name** to show only transactions tagged to this project
-   
-   **Columns to Display:**
-   - Date
-   - Account
-   - Debit
-   - Description
-   
-   **Details to Display:**
-   - Organization Name
-   - Page Number
-   - Organization Logo
-   - Generated Date
-
-4. **Set Report Name and Permissions**
-   - **Report Title**: Use the project name (e.g., "AO Funding 25-26 FY")
-   - **Configure Permissions**: Select "Share with Everyone"
-   - Save the custom report
-5. **Schedule Automated Delivery**
-   - Set up monthly delivery on the **8th of every month**. This allows a full week after month-end for expenses to be approved and processed.
-   - Add email recipients for relevant stakeholders.
-
-## Example Use Case
-For AO Funding tracking:
-- A project named "AO Funding 25-26 FY" and customer "AO Funding" were created
-- All AO-related expenses are tagged with this project when recorded
-- A custom report runs monthly, summarizing cumulative AO expenses for the fiscal year
-- The report is automatically sent to designated recipients and accessible anytime via Zoho Books
+- When recording expenses related to a project, select both the **Customer** and **Project** name for each transaction.
+- To tag multiple expenses at once, see [Project Tracking]({% link docs/zoho-expense/project-tracking.md %}) for the bulk-update workflow.
+- To set up automated reports for a project, see [Project Reports]({% link docs/zoho-expense/project-reports.md %}).
 
 <!--
 ## Project Naming Convention
