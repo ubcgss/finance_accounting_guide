@@ -29,6 +29,7 @@ To update multiple expenses at once:
 
 5. Click **Update** to apply the changes to all selected expenses.
 
+<!--
 ## Project Naming Convention
 
 When selecting the project in the bulk update dialog, use the standard naming format:
@@ -41,11 +42,12 @@ When selecting the project in the bulk update dialog, use the standard naming fo
 |-----------|-------------|---------|
 | Project Type | Name of the initiative | `AO Funding` |
 | Year Range | Two-digit start-end years | `25-26` |
-| Cycle Type | AY (Academic Year, Sep–Aug), FY (Fiscal Year, Jun–May), or CY (Calendar Year, Jan–Dec) | `FY` |
+| Cycle Type | AY (Academic Year, Sep-Aug), FY (Fiscal Year, Jun-May), or CY (Calendar Year, Jan-Dec) | `FY` |
 
 **Example**: `AO Funding 25-26 FY`
 
 See [Zoho Projects]({% link docs/zoho-expense/zoho-projects.md %}) for full details on creating projects and naming conventions.
+-->
 
 {: .important }
 > Always verify that the **Customer** and **Project** fields match before submitting the report. Misassigned expenses create extra work during monthly reconciliation.

@@ -13,5 +13,6 @@ The GSS uses [Zoho Expense](https://expense.zoho.com) as the primary platform fo
 ## Sections
 
 - [Zoho Projects]({% link docs/zoho-expense/zoho-projects.md %}) — How to set up and manage projects in Zoho
-- [Project Tracking]({% link docs/zoho-expense/project-tracking.md %}) — Bulk-updating expenses and naming conventions
+- [Project Tracking]({% link docs/zoho-expense/project-tracking.md %}) — Bulk-updating expenses and assigning projects
 - [Project Reports]({% link docs/zoho-expense/project-reports.md %}) — Creating and scheduling automated project reports
+- [Report Submission]({% link docs/zoho-expense/report-submission.md %}) — Monthly submission rules and report naming format
