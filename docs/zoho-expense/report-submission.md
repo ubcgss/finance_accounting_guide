@@ -18,6 +18,9 @@ In Zoho Expense, a **report** is a submission package that groups related expens
 
 Think of reports as expense claim forms—they package your individual expense items into a single submission for processing.
 
+{: .note }
+> For receipt requirements, reimbursement field guidance, and the approval flow, see [Expense Submission Guide]({% link docs/zoho-expense/expense-submission-guide.md %}).
+
 ## Monthly Submission Requirements
 
 All staff and executives must follow these practices:
