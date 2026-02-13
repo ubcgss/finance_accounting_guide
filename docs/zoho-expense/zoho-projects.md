@@ -3,6 +3,7 @@ title: Zoho Projects
 layout: default
 parent: Zoho Usage Guide
 nav_order: 1
+permalink: /zoho/projects/
 ---
 
 # Zoho Projects

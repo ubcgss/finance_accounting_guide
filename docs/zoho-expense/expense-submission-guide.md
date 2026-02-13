@@ -1,11 +1,12 @@
 ---
-title: Expense Submission Guide
+title: Expense Submission
 layout: default
 parent: Zoho Usage Guide
 nav_order: 5
+permalink: /zoho/expense-submission/
 ---
 
-# Expense Submission Guidelines
+# Expense Submission
 
 ## Receipt Requirements
 
@@ -45,10 +46,9 @@ All expense submissions must include proper documentation:
      - Do NOT check this box for payments to corporations, expense reimbursements, or payroll (which uses T4)
    - **Payee Name:** Full legal name of the person or entity being paid or reimbursed
    - **Interac e-Transfer Email:** The email address for receiving Interac e-Transfer payments (for individuals)
-   - **EFT/Bulk Transfer Details:** Provide complete banking information in this format:
-     - Institution number - Transit number - Account number, Currency
-     - Example: `123-12345-12345678, CAD`
-     - For multiple email addresses, separate each with a comma
+   - **EFT/Bulk Transfer Details:**
+     - For bulk transfers (e.g. chair honoraria and GSFA payments), please use this template to enter the recipients' details and amounts, and upload the same Excel sheet in Zoho Expense.
+     - Please ensure that all email addresses are correct, as we will not be able to verify them. It will be your responsibility to ensure the emails are accurate and updated before submission.
 
 ---
 

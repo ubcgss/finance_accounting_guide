@@ -3,6 +3,7 @@ title: Project Reports
 layout: default
 parent: Zoho Usage Guide
 nav_order: 3
+permalink: /zoho/project-reports/
 ---
 
 # Project Reports

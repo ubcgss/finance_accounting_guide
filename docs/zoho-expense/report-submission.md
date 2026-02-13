@@ -3,6 +3,7 @@ title: Report Submission
 layout: default
 parent: Zoho Usage Guide
 nav_order: 4
+permalink: /zoho/report-submission/
 ---
 
 # Report Submission
@@ -19,7 +20,7 @@ In Zoho Expense, a **report** is a submission package that groups related expens
 Think of reports as expense claim forms—they package your individual expense items into a single submission for processing.
 
 {: .note }
-> For receipt requirements, reimbursement field guidance, and the approval flow, see [Expense Submission Guide]({% link docs/zoho-expense/expense-submission-guide.md %}).
+> For receipt requirements, reimbursement field guidance, and the approval flow, see [Expense Submission]({% link docs/zoho-expense/expense-submission-guide.md %}).
 
 ## Monthly Submission Requirements
 

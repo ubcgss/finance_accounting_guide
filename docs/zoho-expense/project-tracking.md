@@ -3,6 +3,7 @@ title: Project Tracking
 layout: default
 parent: Zoho Usage Guide
 nav_order: 2
+permalink: /zoho/project-tracking/
 ---
 
 # Project Tracking
