@@ -5,7 +5,7 @@ parent: Zoho Usage Guide
 nav_order: 5
 ---
 
-# Guide for Submitting Expenses to Zoho
+# Expense Submission Guidelines
 
 ## Receipt Requirements
 
@@ -54,14 +54,14 @@ All expense submissions must include proper documentation:
 
 ## Approval Process
 
-All expense submissions in Zoho Expenses are reviewed and approved through a four-level approval process:
+All expense submissions in Zoho Expenses are reviewed and approved through a four- or three- level approval process:
 
-1. **Department Head / President**
-2. **VP University and Academic Affairs (VPUAA)**
+1. **Department Head**
+2. **President**
 3. **Financial Officer (FO)**
 4. **Bookkeeper**
 
-After approval at all levels, payments are processed through Plooto and recorded in Zoho Books.
+After approval at all levels, pending payments are processed through Plooto and recorded in Zoho Books.
 
 ---
 
