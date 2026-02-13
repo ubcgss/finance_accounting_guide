@@ -10,8 +10,6 @@ permalink: /zoho/budget-categories/
 
 This page helps you choose the correct **Budget Line** (expense account code) when entering expenses in Zoho. If no code is a clear fit, confirm with the Financial Officer before using `899`.
 
-{: .important }
-> Use this page to choose the **Budget Line code** on each expense. Use [Report Submission]({% link docs/zoho-expense/report-submission.md %}) to choose the report title `Category`.
 
 ## People & Compensation
 
