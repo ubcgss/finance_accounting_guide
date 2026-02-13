@@ -79,7 +79,7 @@ YYYY-MM | ##-DEPT | Category | Short description
 |-----------|-------------|----------|
 | `YYYY-MM` | Year and month of expense period | `2025-01`, `2025-11` |
 | `##-DEPT` | Department code (see table below) | `10-CORP`, `13-VPEXT` |
-| `Category` | Use one of the standard category names listed below | `Meetings & Governance`, `Travel & Conferences` |
+| `Category` | Use one of the standard category names listed below | `Governance & Meetings`, `Travel & Conferences` |
 | `Short description` | Brief explanation | `Council retreat`, `Conference in Toronto` |
 
 **Department Codes:**
@@ -99,16 +99,13 @@ Use these category names in the `Category` part of report titles:
 
 | Category | Use For (Expense Account Codes) |
 |----------|----------------------------------|
-| `Student Funding & Grants` | `860`, `861`, `865`, `785`, `885` |
-| `Food Security & Hampers` | `862`, `863` |
-| `Events & Orientation` | `886`, `887` |
-| `Meetings & Governance` | `845`, `866`, `871`, `872` |
+| `Compensation & Staff Support` | `700`, `701`, `702`, `704`, `705`, `706`, `710`, `715`, `730`, `731`, `740`, `880`, `881`, `883` |
+| `Professional & Contracted Services` | `720`, `725` |
+| `Operations, Facilities & IT` | `750`, `751`, `752`, `753`, `760`, `761`, `770`, `800`, `810` |
+| `Governance & Meetings` | `820`, `830`, `835`, `845`, `850`, `855`, `866`, `870`, `872` |
 | `Travel & Conferences` | `840` |
-| `Services & Contractors` | `720`, `725` |
-| `Office Operations & Licenses` | `800`, `810`, `752`, `760`, `761` |
-| `Honoraria, Benefits & Staff Support` | `705`, `710`, `715`, `730`, `731`, `740` |
-| `Compliance, Insurance & Levies` | `750`, `753` |
-| `Transfers & Other` | `899` |
+| `Programs, Grants & Student Support` | `785`, `860`, `861`, `862`, `863`, `864`, `865`, `885`, `886`, `887` |
+| `Other / Residual` | `899` |
 
 {: .note }
 > For detailed Budget Line code selection guidance by spending purpose, see [Budget Categories]({% link docs/zoho-expense/budget-categories.md %}).
@@ -116,14 +113,14 @@ Use these category names in the `Category` part of report titles:
 **Complete Examples:**
 
 **By Expense Type:**
-- `2025-01 | 13-VPEXT | Meetings & Governance | December coalition meetings`
+- `2025-01 | 13-VPEXT | Governance & Meetings | December coalition meetings`
 - `2025-01 | 13-VPEXT | Travel & Conferences | Vancouver to Ottawa for advocacy week`
-- `2025-11 | 10-CORP | Services & Contractors | November accountant payment`
+- `2025-11 | 10-CORP | Professional & Contracted Services | November accountant payment`
 
 **By Project:**
-- `2025-02 | 14-VPSTD | Events & Orientation | Orientation 2025 planning and supplies`
-- `2025-03 | 12-VPUAA | Student Funding & Grants | March AO event grants`
-- `2025-09 | 11-PRES | Meetings & Governance | Council retreat venue and catering`
+- `2025-02 | 14-VPSTD | Programs, Grants & Student Support | Orientation 2025 planning and supplies`
+- `2025-03 | 12-VPUAA | Programs, Grants & Student Support | March AO event grants`
+- `2025-09 | 11-PRES | Governance & Meetings | Council retreat venue and catering`
 
 {: .important }
 > **Deadline**: Submit all monthly expenses by the last day of the month that falls on a business day.

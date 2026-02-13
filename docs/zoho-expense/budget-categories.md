@@ -11,7 +11,7 @@ permalink: /zoho/budget-categories/
 This page helps you choose the correct **Budget Line** (expense account code) when entering expenses in Zoho. If no code is a clear fit, confirm with the Financial Officer before using `899`.
 
 
-## People & Compensation
+## Compensation & Staff Support
 
 | Code | Account Name | Usage |
 |------|--------------|-------|
@@ -65,7 +65,7 @@ This page helps you choose the correct **Budget Line** (expense account code) wh
 | `870` | `Annual General Meetings` | Costs specific to Annual General Meetings. |
 | `872` | `Executive Meetings` | Costs specific to executive meetings. |
 
-## Travel & Representation
+## Travel & Conferences
 
 | Code | Account Name | Usage |
 |------|--------------|-------|
@@ -94,24 +94,3 @@ This page helps you choose the correct **Budget Line** (expense account code) wh
 
 {: .note }
 > If an expense could fit a specific code, use that specific code instead of `899`.
-
-## Crosswalk to Report Title Categories
-
-Use this table to keep line-item coding aligned with report naming in [Report Submission]({% link docs/zoho-expense/report-submission.md %}).
-
-| Report Title Category | Typical Budget Line Codes |
-|-----------------------|---------------------------|
-| `Student Funding & Grants` | `785`, `860`, `861`, `865`, `885` |
-| `Food Security & Hampers` | `862`, `863` |
-| `Events & Orientation` | `886`, `887` |
-| `Meetings & Governance` | `820`, `830`, `835`, `845`, `850`, `866`, `870`, `872` |
-| `Travel & Conferences` | `840` |
-| `Services & Contractors` | `720`, `725` |
-| `Office Operations & Licenses` | `752`, `760`, `761`, `770`, `800`, `810` |
-| `Honoraria, Benefits & Staff Support` | `700`, `701`, `702`, `704`, `705`, `706`, `710`, `715`, `730`, `731`, `740`, `880`, `881`, `883` |
-| `Compliance, Insurance & Levies` | `750`, `751`, `753` |
-| `Transfers & Other` | `899` |
-| `FO Confirmation Required` | `855`, `864` |
-
-{: .important }
-> For codes that are not clearly covered by the report title standard, confirm the report `Category` with the Financial Officer before submission.
