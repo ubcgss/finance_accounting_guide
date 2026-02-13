@@ -22,18 +22,20 @@ Think of reports as expense claim forms—they package your individual expense i
 {: .note }
 > For receipt requirements, reimbursement field guidance, and the approval flow, see [Expense Submission]({% link docs/zoho-expense/expense-submission-guide.md %}).
 
-## Monthly Submission Requirements
+## Biweekly Submission Requirements
 
 All staff and executives must follow these practices:
 
-### 1. Submit Expenses Monthly
+### 1. Submit All Expenses by Month-End
 
-**Submit all expenses at the end of each month**, even if you have minimal expenses.
+**All expenses must be submitted by the last business day of each month**, even if you have minimal expenses.
+
+The GSS operates on a biweekly payment cycle for processing. You do not need to submit every expense in each biweekly cycle; in each biweekly run, prioritize reimbursements and payment approvals, including time-sensitive items such as GSFA payments and chair honoraria.
 
 **Why this matters:**
 - **Accurate financial reporting**: Expenses are allocated to the correct accounting period
 - **Budget monitoring**: Monthly submissions allow real-time tracking of departmental spending
-- **Timely reimbursement**: Regular submissions prevent delays in getting reimbursed
+- **Timely reimbursement**: Prioritizing reimbursements in biweekly cycles helps prevent payment delays
 - **Better record keeping**: Submitting expenses soon after they occur ensures accurate descriptions and proper documentation
 - **Reduced administrative burden**: Small, regular submissions are easier to review than large, delayed ones
 
