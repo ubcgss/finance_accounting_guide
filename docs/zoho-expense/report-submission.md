@@ -55,6 +55,9 @@ The GSS operates on a biweekly payment cycle for processing. You do not need to 
 - Regular monthly service payments (subscriptions, contractors)
 - Office supplies and equipment purchases
 
+{: .important }
+> Reimbursements must be submitted in separate reports. Do not mix reimbursements and credit card expenses in the same report. You may combine multiple reimbursements in one report (for example, chair honoraria and meeting vouchers).
+
 **Why this matters:**
 - **Faster approvals**: Reviewers can quickly understand and approve related expenses together
 - **Clearer context**: Grouped expenses tell a coherent story (e.g., all costs for one event)
