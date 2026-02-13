@@ -47,7 +47,7 @@ All expense submissions must include proper documentation:
    - **Payee Name:** Full legal name of the person or entity being paid or reimbursed
    - **Interac e-Transfer Email:** The email address for receiving Interac e-Transfer payments (for individuals)
    - **EFT/Bulk Transfer Details:**
-     - For bulk transfers (e.g. chair honoraria and GSFA payments), please use this template to enter the recipients' details and amounts, and upload the same Excel sheet in Zoho Expense.
+     - For bulk transfers (e.g. chair honoraria and GSFA payments), please use [this template]({{ site.baseurl }}/assets/docs/Plooto_Bulkpayment_Import_template.xlsx) to enter the recipients' details and amounts, and upload the same Excel sheet in Zoho Expense.
      - Please ensure that all email addresses are correct, as we will not be able to verify them. It will be your responsibility to ensure the emails are accurate and updated before submission.
 
 ---
