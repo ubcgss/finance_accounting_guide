@@ -31,14 +31,16 @@ All staff and executives must follow these practices:
 **Submit all expenses at the end of each month**, even if you have minimal expenses.
 
 **Why this matters:**
-- **Accurate Financial Reporting**: Expenses are allocated to the correct accounting period
-- **Budget Monitoring**: Monthly submissions allow real-time tracking of departmental spending
-- **Timely Reimbursement**: Regular submissions prevent delays in getting reimbursed
-- **Better Record Keeping**: Submitting expenses soon after they occur ensures accurate descriptions and proper documentation
-- **Reduced Administrative Burden**: Small, regular submissions are easier to review than large, delayed ones
+- **Accurate financial reporting**: Expenses are allocated to the correct accounting period
+- **Budget monitoring**: Monthly submissions allow real-time tracking of departmental spending
+- **Timely reimbursement**: Regular submissions prevent delays in getting reimbursed
+- **Better record keeping**: Submitting expenses soon after they occur ensures accurate descriptions and proper documentation
+- **Reduced administrative burden**: Small, regular submissions are easier to review than large, delayed ones
 
+<!--
 {: .warning }
 > Delayed submissions can result in expenses being recorded in the wrong fiscal period, causing budget discrepancies and complicating year-end financial reporting.
+-->
 
 ### 2. Group Expenses by Type or Project
 
@@ -52,10 +54,10 @@ All staff and executives must follow these practices:
 - Office supplies and equipment purchases
 
 **Why this matters:**
-- **Faster Approvals**: Reviewers can quickly understand and approve related expenses together
-- **Clearer Context**: Grouped expenses tell a coherent story (e.g., all costs for one event)
-- **Easier Tracking**: Project-based reports make it simple to monitor specific budgets
-- **Better Documentation**: Related receipts and justifications stay together
+- **Faster approvals**: Reviewers can quickly understand and approve related expenses together
+- **Clearer context**: Grouped expenses tell a coherent story (e.g., all costs for one event)
+- **Easier tracking**: Project-based reports make it simple to monitor specific budgets
+- **Better documentation**: Related receipts and justifications stay together
 
 {: .note }
 > You may submit multiple reports per month if you have expenses that fall into different categories or projects. For example, submit one report for "Meeting Expenses" and another for "Travel to Conference."
@@ -121,7 +123,7 @@ Use these category names in the `Category` part of report titles:
 - `2025-09 | 11-PRES | Meetings & Governance | Council retreat venue and catering`
 
 {: .important }
-> **Deadline**: Submit all monthly expenses by the **3rd business day** of the following month (e.g., January expenses submitted by February 3rd).
+> **Deadline**: Submit all monthly expenses by the last day of the month that falls on a business day.
 
 <!--
 ## Submission Checklist
