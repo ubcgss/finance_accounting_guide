@@ -17,3 +17,4 @@ The GSS uses [Zoho Expense](https://expense.zoho.com) as the primary platform fo
 - [Project Reports]({% link docs/zoho-expense/project-reports.md %}) — Creating and scheduling automated project reports
 - [Report Submission]({% link docs/zoho-expense/report-submission.md %}) — Monthly submission rules and report naming format
 - [Expense Submission]({% link docs/zoho-expense/expense-submission-guide.md %}) — Receipt requirements, reimbursement fields, and approval flow
+- [Budget Categories]({% link docs/zoho-expense/budget-categories.md %}) — Budget line selection by spending purpose and account code

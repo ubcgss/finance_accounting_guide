@@ -110,6 +110,9 @@ Use these category names in the `Category` part of report titles:
 | `Compliance, Insurance & Levies` | `750`, `753` |
 | `Transfers & Other` | `899` |
 
+{: .note }
+> For detailed Budget Line code selection guidance by spending purpose, see [Budget Categories]({% link docs/zoho-expense/budget-categories.md %}).
+
 **Complete Examples:**
 
 **By Expense Type:**
