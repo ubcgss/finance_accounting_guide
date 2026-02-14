@@ -50,6 +50,11 @@ All expense submissions must include proper documentation:
      - For bulk transfers (e.g. chair honoraria and GSFA payments), please use [this template]({{ site.baseurl }}/assets/docs/Plooto_Bulkpayment_Import_template.xlsx) to enter the recipients' details and amounts, and upload the same Excel sheet in Zoho Expense.
      - Please ensure that all email addresses are correct, as we will not be able to verify them. It will be your responsibility to ensure the emails are accurate and updated before submission.
 
+
+{: .important }
+> **Important Note on Expense Accuracy**: Please ensure all submitted expense amounts match the actual final credit card transaction amount before submission. We have seen frequent mismatches for merchants such as Save-On, Instacart, and Uber.
+
+
 ---
 
 ## Approval Process
