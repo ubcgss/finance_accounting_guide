@@ -67,6 +67,10 @@ This guide draws from:
 - **External bookkeeper**: Bickert Management Inc.
 - **Software**: Zoho Expense, Zoho Vault, Zoho Books, Plooto, Vancity, Scotiabank, CRA My Business Account
 
+## Workflow
+
+After making any content changes to the guide, always commit and push to `main`.
+
 ## Callout Syntax
 
 Use just-the-docs callouts in content:
