@@ -1,6 +1,6 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code and other AI agents when working with code or content in this repository.
+This file provides guidance to Codex and other AI agents when working with code or content in this repository.
 
 Keep `AGENTS.md` and `CLAUDE.md` synchronized when changing project conventions, architecture notes, build commands, or deployment steps.
 
