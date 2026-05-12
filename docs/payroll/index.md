@@ -10,7 +10,7 @@ permalink: /payroll/
 
 This page covers the biweekly payroll review tasks completed by Executives and
 Staff in Payworks: [approving employee time off requests](#1-review-and-approve-employee-time-off),
-[approving employee timesheets](#2-review-and-approve-employee-timesheets),
+[approving Work Learn and part-time timesheets](#2-review-and-approve-work-learn-and-part-time-timesheets),
 and [approving the payroll](#3-review-and-approve-the-payroll) (Financial Officer only).
 
 ---
@@ -39,9 +39,21 @@ accrued balance, timing conflict), check with the GM before approving.
 
 ---
 
-## 2. Review and Approve Employee Timesheets
+## 2. Review and Approve Work Learn and Part-Time Timesheets
 
-*This section is pending — to be written up by the FO.*
+Use the [S26 WL & PT Hours tracker](https://ubcgss.sharepoint.com/:x:/s/FinanceandAccounting/IQDnEuODWFadTbbnZ58rJh70AY0xdnIMJavrFme99Me-nHY?e=92zmHd) to review Summer 2026 Work
+Learn and part-time hours. Review your direct reports' hours regularly and
+confirm that they align with the approved hours highlighted in yellow.
+
+If a direct report requests additional hours, inform the Financial Officer and
+General Manager before making any changes so the GSS can confirm budget
+capacity.
+
+If a direct report is consistently working below their approved hours, adjust
+workloads as needed, especially for Work Learn positions. The GSS must report
+Work Learn hours and gross monthly totals to the UBC Work Learn Program. When a
+Work Learn role consistently falls below its approved hours, it can weaken the
+case for keeping the position in the next term.
 
 ---
 
