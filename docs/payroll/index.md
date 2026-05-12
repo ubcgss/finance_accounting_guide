@@ -48,7 +48,7 @@ accrued balance, timing conflict), check with the GM before approving.
 3. Select **Current pay period** from the **Pay Period** dropdown, then click
    **View**.
 
-   <img src="{{ site.baseurl }}/assets/images/payworks_timesheets_pay_period.png" alt="Payworks pay period dropdown with Select current pay period highlighted" style="max-width: 760px; width: 100%; height: auto;">
+   <img src="{{ site.baseurl }}/assets/images/payworks_timesheets_pay_period.png" alt="Payworks pay period dropdown with Select current pay period highlighted" style="width: 50%; height: auto;">
 
 4. Use the current-term WL & PT Hours tracker (update this link each term; the
    Summer 2026 tracker is [here](https://ubcgss.sharepoint.com/:x:/s/FinanceandAccounting/IQDnEuODWFadTbbnZ58rJh70AY0xdnIMJavrFme99Me-nHY?e=92zmHd))
@@ -57,7 +57,7 @@ accrued balance, timing conflict), check with the GM before approving.
 5. Unreviewed entries are marked **Pending**. To view tasks or notes attached
    to an entry, click the notepad icon beside it.
 
-   <img src="{{ site.baseurl }}/assets/images/payworks_timesheets_pending.png" alt="Payworks timesheet entries marked Pending with review checkboxes and notepad icons" style="max-width: 760px; width: 100%; height: auto;">
+   <img src="{{ site.baseurl }}/assets/images/payworks_timesheets_pending.png" alt="Payworks timesheet entries marked Pending with review checkboxes and notepad icons" style="width: 70%; height: auto;">
 
 6. To approve hours, check the box beside each reviewed entry and click
    **Save** at the bottom of the page.
