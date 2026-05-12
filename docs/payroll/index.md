@@ -41,19 +41,43 @@ accrued balance, timing conflict), check with the GM before approving.
 
 ## 2. Review and Approve Work Learn and Part-Time Timesheets
 
-Use the [S26 WL & PT Hours tracker](https://ubcgss.sharepoint.com/:x:/s/FinanceandAccounting/IQDnEuODWFadTbbnZ58rJh70AY0xdnIMJavrFme99Me-nHY?e=92zmHd) to review Summer 2026 Work
-Learn and part-time hours. Review your direct reports' hours regularly and
-confirm that they align with the approved hours highlighted in yellow.
+1. Log in to [Payworks](https://login.payworks.ca/login) using your Executive
+   or Staff account.
+2. Open **Timesheets** from the left toolbar (also accessible via **Time
+   Management → Timesheets**).
+3. Select **Current pay period** from the **Pay Period** dropdown, then click
+   **View**.
 
-If a direct report requests additional hours, inform the Financial Officer and
-General Manager before making any changes so the GSS can confirm budget
-capacity.
+![Payworks pay period dropdown with Select current pay period highlighted]({{ site.baseurl }}/assets/images/payworks_timesheets_pay_period.png)
 
-If a direct report is consistently working below their approved hours, adjust
-workloads as needed, especially for Work Learn positions. The GSS must report
-Work Learn hours and gross monthly totals to the UBC Work Learn Program. When a
-Work Learn role consistently falls below its approved hours, it can weaken the
-case for keeping the position in the next term.
+4. Use the current-term WL & PT Hours tracker (update this link each term; the
+   Summer 2026 tracker is [here](https://ubcgss.sharepoint.com/:x:/s/FinanceandAccounting/IQDnEuODWFadTbbnZ58rJh70AY0xdnIMJavrFme99Me-nHY?e=92zmHd))
+   to confirm that your direct reports' hours align with the approved weekly
+   totals highlighted in yellow.
+5. Unreviewed entries are marked **Pending**. To view tasks or notes attached
+   to an entry, click the notepad icon beside it.
+
+![Payworks timesheet entries marked Pending with review checkboxes and notepad icons]({{ site.baseurl }}/assets/images/payworks_timesheets_pending.png)
+
+6. To approve hours, check the box beside each reviewed entry and click
+   **Save** at the bottom of the page.
+
+Timesheets must be approved before the payroll submission deadline communicated
+by the Financial Officer each period.
+
+### Requesting Additional Hours
+
+If a direct report needs hours beyond their approved allocation, notify the
+Financial Officer and General Manager before making any changes. Approval is
+required to confirm budget capacity.
+
+### Work Learn Reporting and Hour Shortfalls
+
+The GSS reports Work Learn hours and gross monthly totals to the UBC Work Learn
+Program. If a Work Learn employee is consistently working below their approved
+hours, adjust their workload accordingly. When a Work Learn role consistently
+falls below its approved hours, it can weaken the case for keeping the position
+in the next term.
 
 ---
 
