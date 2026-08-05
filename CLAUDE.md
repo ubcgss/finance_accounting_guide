@@ -128,3 +128,19 @@ For config, theme, asset, or workflow changes:
 - Check that deployment assumptions still match `.github/workflows/pages.yml`.
 
 Report changed files, validation run, and any known gaps.
+## Skills and agents
+
+<!-- agent_skills:start -->
+**Skills and agents in this repo are generated.** Everything under `.claude/skills/` and
+`.claude/agents/` is produced by `~/Projects/small_projects/agent_skills/sync.sh`. Never
+create or edit one in place, and never hand-copy one between tools or repos -- your edit is
+silently overwritten on the next sync.
+
+**Before creating or changing any skill or agent, read
+`~/Projects/small_projects/agent_skills/AUTHORING.md`.** It carries the procedure, the
+drawer layout, and the per-tool agent file formats.
+
+This repo is copy mode: its skills and agents are committed to git here as real files, so
+re-run `./sync.sh` after editing a source, and `./sync.sh --check` to prove parity.
+`SKILLS.md` at the repo root lists what is currently installed.
+<!-- agent_skills:end -->
