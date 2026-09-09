@@ -21,10 +21,15 @@ Once a project is set up and expenses are tagged (see [Zoho Projects]({% link do
 3. **Configure Report Settings**
 
    **Basic Settings:**
-   - **Date Range**: Select the date range for the cycle
-     - GSS Fiscal Year: June 1 – May 31
-     - Academic Year: September 1 – August 31
-     - Calendar Year: January 1 – December 31
+   - **Date Range**: Select the range that matches the project's funding cycle. Use the full cycle so the report shows cumulative spending to date.
+
+     | Project or funding stream | Report date range | Example for 2025–26 |
+     |---|---|---|
+     | GSFA | GSS fiscal year: June 1 – May 31 | June 1, 2025 – May 31, 2026 |
+     | AO Funding | GSS fiscal year: June 1 – May 31 | June 1, 2025 – May 31, 2026 |
+     | FSI | Academic year: September 1 – August 31 | September 1, 2025 – August 31, 2026 |
+
+     For other projects, use the date range that matches the relevant funding agreement or project cycle.
    - **Group By**: Leave ungrouped (select "None")
 
    **Advanced Filters:**
