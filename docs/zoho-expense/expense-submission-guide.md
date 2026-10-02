@@ -44,6 +44,14 @@ All expense submissions must include proper documentation:
    - **T4A Reportable Payment (CRA)**
      - Check this box ONLY if payment is made to an **individual** (not a corporation) for scholarships, awards, honoraria, or service-based compensation
      - Do NOT check this box for payments to corporations, expense reimbursements, or payroll (which uses T4)
+   - **Type of Earnings**
+     - Complete this field only when the payment goes to an **individual** (a reimbursement or other payment to a person). Leave it blank for vendor invoices and credit card purchases.
+     - Choose the option that describes why the person is being paid:
+       - **Reimbursement**: Paying someone back for GSS expenses they covered out of pocket (e.g. supplies bought with a personal card, meeting vouchers).
+       - **Financial Aid**: Scholarships, bursaries, awards, and GSFA disbursements.
+       - **Contractor**: Payment to an individual for services they provided (e.g. a photographer, facilitator, or workshop presenter).
+       - **Other Income**: Other payments to individuals that are not for a specific service, such as Council Chair and Speaker honoraria.
+     - If you are unsure which option applies, ask the Financial Officer before submitting.
    - **Payee Name:** Full legal name of the person or entity being paid or reimbursed
    - **Interac e-Transfer Email:** The email address for receiving Interac e-Transfer payments (for individuals)
    - **EFT/Bulk Transfer Details:**
