@@ -8,7 +8,9 @@ permalink: /zoho/
 
 # Zoho Usage Guide
 
-The GSS uses [Zoho Expense](https://expense.zoho.com) as the primary platform for tracking expenses, managing projects, and processing approvals. This section covers the key workflows executives and staff need to follow.
+The GSS runs its finances on three connected Zoho tools. [Zoho Books](https://books.zoho.com) is the accounting system of record: it holds the chart of accounts, the general ledger, and budget-vs-actuals reporting, and it is where approved expenses are recorded once they are paid through Plooto. [Zoho Expense](https://expense.zoho.com) is where executives and staff submit receipts and expense reports. Each expense is coded to a [budget category]({% link docs/zoho-expense/budget-categories.md %}), grouped into a report that is [submitted by month-end under a standard name]({% link docs/zoho-expense/report-submission.md %}), and sent through the [approval process]({% link docs/zoho-expense/expense-submission-guide.md %}#approval-process).
+
+**Projects** are a Zoho Books feature that work across both tools. Tagging expenses with a project (e.g. AO Funding, an FSI program, or a specific event) lets you follow spending on that initiative across budget lines. See [Zoho Projects]({% link docs/zoho-expense/zoho-projects.md %}) to set one up, [Project Tracking]({% link docs/zoho-expense/project-tracking.md %}) to assign expenses in bulk, and [Project Reports]({% link docs/zoho-expense/project-reports.md %}) for automated spending reports. If you are new to Zoho, start with [Expense Submission]({% link docs/zoho-expense/expense-submission-guide.md %}).
 
 ## Sections
 
