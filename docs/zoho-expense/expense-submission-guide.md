@@ -18,6 +18,7 @@ All expense submissions must include proper documentation:
   - Date of purchase
   - Merchant name
   - Total amount paid
+  - Payment method, including the card used (e.g. last four digits of the card)
   - Itemized description of purchases
 
 **For restaurant expenses:** Provide photos of both the itemized receipt AND the payment receipt showing tip. Restaurant tips should not exceed 18%.
