@@ -96,7 +96,6 @@ YYYY-MM | ##-DEPT | Category | Short description
 | `12-VPUAA` | Vice President University and Academic Affairs |
 | `13-VPEXT` | Vice President External Relations |
 | `14-VPSTD` | Vice President Students |
-| `15-FO` | Financial Officer |
 
 ## Recommended Category Names and Account Mapping
 
