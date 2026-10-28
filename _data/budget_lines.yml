@@ -1,0 +1,754 @@
+# Budget lines (4-digit chart of accounts, effective 2026-06-01).
+#
+# Single source for:
+#   - docs/zoho-expense/budget-categories.md (tables and search box)
+#   - assets/data/budget_lines.json, which the zoho-receipt-to-report Claude skill fetches
+#
+# Every active 6000/7000 Zoho Expense category is listed here, so this file can be diffed
+# against Zoho's live category list. When the chart of accounts changes in Zoho, update this
+# file in the same week.
+#
+# Fields:
+#   code, name         -- exactly as Zoho shows them ("6540 - Office Supplies")
+#   zoho_category_id   -- Zoho Expense category_id (org 903421237); used by the skill only
+#   budget_category    -- one of the `categories` below; goes in the report title
+#   formerly           -- FY2026-27 budget code before the renumbering ("" if new)
+#   finance_only       -- true for payroll postings, rollups and accounting entries that
+#                         staff and executives should not pick
+#   usage              -- when to use the line
+#   keywords           -- extra search terms (lowercase)
+#   examples           -- real reports: text (no names or health details), report_number,
+#                         report_id (opens in Zoho for approvers only)
+
+categories:
+  - name: Compensation & Staff Support
+    summary: Wages, benefits, honoraria, staff development and appreciation.
+  - name: Professional & Contracted Services
+    summary: Outside professionals and contracted services.
+  - name: Operations, Facilities & IT
+    summary: Running the building and the office, software, marketing and bank fees.
+  - name: Governance & Meetings
+    summary: Elections, retreats, and executive, Council, committee and AGM meetings.
+  - name: Travel & Conferences
+    summary: Travel, conferences and lobbying dues.
+  - name: Programs, Grants & Student Support
+    summary: Programs, events, orientation, grants, GSFA, affiliates and CPIF projects.
+  - name: Other / Residual
+    summary: Last-resort and accounting lines.
+
+lines:
+  # ---------------------------------------------------------------- Compensation & Staff Support
+  - code: "6000"
+    name: Employee Salaries (FT)
+    zoho_category_id: "7490232000002746409"
+    budget_category: Compensation & Staff Support
+    formerly: "700"
+    finance_only: true
+    usage: Gross salaries for full-time employees. Posted from payroll.
+    keywords: [salary, payroll, full-time, wages, fte]
+    examples: []
+  - code: "6010"
+    name: Employee Salaries (PT)
+    zoho_category_id: "7490232000002746413"
+    budget_category: Compensation & Staff Support
+    formerly: "701"
+    finance_only: true
+    usage: Gross wages for recurring part-time staff on payroll. Posted from payroll.
+    keywords: [wages, payroll, part-time, casual]
+    examples: []
+  - code: "6020"
+    name: Employee Salaries (WL)
+    zoho_category_id: "7490232000002746417"
+    budget_category: Compensation & Staff Support
+    formerly: "702"
+    finance_only: true
+    usage: UBC Work-Learn student wages. Posted from payroll.
+    keywords: [work learn, work-learn, wl, wage subsidy, student wages]
+    examples: []
+  - code: "6030"
+    name: Employee Benefits (FT)
+    zoho_category_id: "7490232000002746441"
+    budget_category: Compensation & Staff Support
+    formerly: "703"
+    finance_only: false
+    usage: Employer-paid benefits for full-time employees, such as health spending account claims and benefit premiums.
+    keywords: [benefits, hsa, health spending account, extended health, dental plan, dental, premium]
+    examples:
+      - text: Employer HSA claim charges
+        report_number: ER-00986
+        report_id: "7490232000001073490"
+      - text: Monthly group benefits premium
+        report_number: ER-01178
+        report_id: "7490232000003472096"
+  - code: "6040"
+    name: Employee Benefits (PT)
+    zoho_category_id: "7490232000002746445"
+    budget_category: Compensation & Staff Support
+    formerly: "704"
+    finance_only: false
+    usage: Employer-paid benefits for part-time employees.
+    keywords: [benefits, part-time benefits, part-time, premium]
+    examples: []
+  - code: "6050"
+    name: Professional Development - Staff
+    zoho_category_id: "7490232000002746449"
+    budget_category: Compensation & Staff Support
+    formerly: "705"
+    finance_only: false
+    usage: Training, courses, certifications and workshops for staff.
+    keywords: [training, course, workshop, certification, webinar, staff development, professional development, serving it right, staff]
+    examples:
+      - text: Staff certification exam fee
+        report_number: ER-01144
+        report_id: "7490232000003000677"
+  - code: "6060"
+    name: Staff Appreciation
+    zoho_category_id: "7490232000002746453"
+    budget_category: Compensation & Staff Support
+    formerly: "706"
+    finance_only: false
+    usage: Staff appreciation and recognition, such as staff socials, holiday lunches and thank-you gifts.
+    keywords: [staff social, holiday party, staff lunch, gift card, thank you, appreciation, birthday]
+    examples:
+      - text: Monthly staff social lunch
+        report_number: ER-01118
+        report_id: "7490232000002731024"
+      - text: Staff birthday gift cards
+        report_number: ER-01150
+        report_id: "7490232000003114158"
+  - code: "6070"
+    name: Executive Honoraria
+    zoho_category_id: "7490232000002746457"
+    budget_category: Compensation & Staff Support
+    formerly: "707"
+    finance_only: false
+    usage: Honoraria paid to elected GSS executives.
+    keywords: [honorarium, honoraria, executive pay, stipend, executive honoraria, exec pay]
+    examples: []
+  - code: "6080"
+    name: Council Chair & Speaker Honoraria
+    zoho_category_id: "7490232000002746461"
+    budget_category: Compensation & Staff Support
+    formerly: "708"
+    finance_only: false
+    usage: Approved honoraria for the Council Chair, Speaker and appointed chairs.
+    keywords: [honorarium, honoraria, chair, speaker, stipend, chair honoraria, council chair]
+    examples:
+      - text: Monthly Council Chair honorarium
+        report_number: ER-01107
+        report_id: "7490232000002602092"
+      - text: Chair honorarium for strategic plan work
+        report_number: ER-01185
+        report_id: "7490232000003561001"
+  - code: "6090"
+    name: Professional Development - Executives
+    zoho_category_id: "7490232000002746465"
+    budget_category: Compensation & Staff Support
+    formerly: "709"
+    finance_only: false
+    usage: Training, courses and workshops for executives.
+    keywords: [training, course, workshop, executive development, exec training, professional development, executive]
+    examples: []
+  - code: "6110"
+    name: PT Staff Costs - Programs
+    zoho_category_id: "7490232000002746421"
+    budget_category: Compensation & Staff Support
+    formerly: "710"
+    finance_only: false
+    usage: Part-time staffing for program delivery.
+    keywords: [casual staff, program staff, coordinator, part-time, student assistant, programs]
+    examples: []
+  - code: "6120"
+    name: PT Staff Costs - Events
+    zoho_category_id: "7490232000002746425"
+    budget_category: Compensation & Staff Support
+    formerly: "711"
+    finance_only: false
+    usage: Part-time staffing for event delivery.
+    keywords: [event staff, casual staff, bartender, security staff, part-time, event wages, events]
+    examples: []
+  - code: "6130"
+    name: PT Staff Costs - Orientation
+    zoho_category_id: "7490232000002746429"
+    budget_category: Compensation & Staff Support
+    formerly: "712"
+    finance_only: false
+    usage: Part-time staffing for orientation.
+    keywords: [orientation staff, orientation leader, part-time, orientation wages]
+    examples: []
+  - code: "6140"
+    name: PT Staff Costs - Commercial Events
+    zoho_category_id: "7490232000002746433"
+    budget_category: Compensation & Staff Support
+    formerly: "713"
+    finance_only: false
+    usage: Part-time staffing that directly supports commercial events (bookings and rentals).
+    keywords: [commercial event staff, rental staff, booking staff, part-time, commercial events, bar staff, thea's lounge]
+    examples: []
+  - code: "6150"
+    name: Employer Statutory Contributions - Employees (FT/PT)
+    zoho_category_id: "7490232000002746585"
+    budget_category: Compensation & Staff Support
+    formerly: ""
+    finance_only: true
+    usage: Rollup for employer CPP, EI and WCB on staff. Post to 6151-6153, not here.
+    keywords: [cpp, ei, wcb, statutory, employer contributions, payroll remittance]
+    examples: []
+  - code: "6151"
+    name: Employer CPP - Staff
+    zoho_category_id: "7490232000002746589"
+    budget_category: Compensation & Staff Support
+    formerly: ""
+    finance_only: true
+    usage: Employer-portion CPP for staff. Posted from payroll.
+    keywords: [cpp, canada pension plan, canada pension, employer cpp]
+    examples: []
+  - code: "6152"
+    name: Employer EI - Staff
+    zoho_category_id: "7490232000002746593"
+    budget_category: Compensation & Staff Support
+    formerly: ""
+    finance_only: true
+    usage: Employer-portion EI for staff. Posted from payroll.
+    keywords: [ei, employment insurance, employer ei]
+    examples: []
+  - code: "6153"
+    name: WCB / WorkSafeBC - Staff
+    zoho_category_id: "7490232000002746597"
+    budget_category: Compensation & Staff Support
+    formerly: ""
+    finance_only: true
+    usage: WorkSafeBC premiums for staff.
+    keywords: [wcb, worksafebc, workers compensation, worksafe]
+    examples: []
+  - code: "6160"
+    name: Employer Statutory Contributions - Executives
+    zoho_category_id: "7490232000002746601"
+    budget_category: Compensation & Staff Support
+    formerly: ""
+    finance_only: true
+    usage: Rollup for employer contributions on executive honoraria. Post to 6161, not here.
+    keywords: [cpp, statutory, executives, executive cpp, executive ei, employer contributions]
+    examples: []
+  - code: "6161"
+    name: Employer CPP - Executives
+    zoho_category_id: "7490232000002746605"
+    budget_category: Compensation & Staff Support
+    formerly: ""
+    finance_only: true
+    usage: Employer-portion CPP on executive honoraria. Posted from payroll.
+    keywords: [cpp, executives, executive cpp, canada pension]
+    examples: []
+  - code: "6190"
+    name: PT Staff Costs - Other Operating
+    zoho_category_id: "7490232000002746437"
+    budget_category: Compensation & Staff Support
+    formerly: "719"
+    finance_only: false
+    usage: Operating part-time staffing that fits no line above.
+    keywords: [casual staff, part-time labour, part-time, other labour, misc staff]
+    examples: []
+
+  # ---------------------------------------------------------------- Professional & Contracted Services
+  - code: "6200"
+    name: Professional & Contracted Services
+    zoho_category_id: "7490232000002746469"
+    budget_category: Professional & Contracted Services
+    formerly: "720"
+    finance_only: false
+    usage: Outside professionals and contracted services, such as legal, accounting, audit, HR consulting and contractors' invoices.
+    keywords: [lawyer, legal, accountant, bookkeeping, audit, consultant, contractor, hr, accounting, linens, cell phone]
+    examples:
+      - text: Linen rental for events and bookings
+        report_number: ER-01200
+        report_id: "7490232000003775001"
+      - text: Health and dental coordinator cell phone reimbursement
+        report_number: ER-01160
+        report_id: "7490232000003244020"
+      - text: Annual financial statement audit
+        report_number: ER-01086
+        report_id: "7490232000002362002"
+      - text: Monthly bookkeeping services
+        report_number: ER-00989
+        report_id: "7490232000001145042"
+
+  # ---------------------------------------------------------------- Programs, Grants & Student Support
+  - code: "6300"
+    name: Program, Event and Orientation Costs
+    zoho_category_id: "7490232000004069132"
+    budget_category: Programs, Grants & Student Support
+    formerly: ""
+    finance_only: true
+    usage: Header for 6310-6340. Post to one of those, not here.
+    keywords: []
+    examples: []
+  - code: "6310"
+    name: Program Costs
+    zoho_category_id: "7490232000002746473"
+    budget_category: Programs, Grants & Student Support
+    formerly: "730"
+    finance_only: false
+    usage: Direct costs of delivering an approved GSS program (recurring activity, not a one-off event).
+    keywords: [program supplies, workshop, program, program costs, league fees, ski subsidy]
+    examples:
+      - text: Intramural softball league fees
+        report_number: ER-01157
+        report_id: "7490232000003250001"
+      - text: Ski subsidy payments to students
+        report_number: ER-00968
+        report_id: "7490232000000977558"
+  - code: "6320"
+    name: Event Costs
+    zoho_category_id: "7490232000002746477"
+    budget_category: Programs, Grants & Student Support
+    formerly: "731"
+    finance_only: false
+    usage: Direct costs of a GSS-hosted event for members, such as food, venue, decorations, prizes and entertainment.
+    keywords: [event, food, catering, pizza, venue, decorations, prizes, dj, social, gala, supplies, snacks, swag]
+    examples:
+      - text: Venue and catering for the GSS Gala
+        report_number: ER-01151
+        report_id: "7490232000003114183"
+      - text: Photographer for a headshot session
+        report_number: ER-01166
+        report_id: "7490232000003264076"
+      - text: Supplies for a student art therapy event
+        report_number: ER-01157
+        report_id: "7490232000003250001"
+  - code: "6330"
+    name: Orientation Costs
+    zoho_category_id: "7490232000002746481"
+    budget_category: Programs, Grants & Student Support
+    formerly: "732"
+    finance_only: false
+    usage: Direct costs of orientation programming.
+    keywords: [orientation, welcome week, swag, t-shirts, welcome, bowling, family day, new students]
+    examples:
+      - text: Bowling for an orientation event
+        report_number: ER-01201
+        report_id: "7490232000003775033"
+      - text: Orientation T-shirts
+        report_number: ER-01156
+        report_id: "7490232000003167012"
+      - text: Bouncy castle rental for Family Day
+        report_number: ER-01201
+        report_id: "7490232000003775033"
+  - code: "6340"
+    name: Meal Subsidy Program Costs
+    zoho_category_id: "7490232000004069172"
+    budget_category: Programs, Grants & Student Support
+    formerly: ""
+    finance_only: false
+    usage: Costs of the meal subsidy program.
+    keywords: [meal subsidy, meals, meal program, food voucher, restaurant, subsidy]
+    examples:
+      - text: Meal subsidy restaurant order
+        report_number: ER-01226
+        report_id: "7490232000004104036"
+  - code: "6700"
+    name: GSFA Expenses - Additional Contributions
+    zoho_category_id: "7490232000002746561"
+    budget_category: Programs, Grants & Student Support
+    formerly: "770"
+    finance_only: false
+    usage: GSFA awards paid from contributions beyond the base fee allocation. Needs Council or Finance Committee approval.
+    keywords: [gsfa, financial aid, bursary, award, additional contribution, financial assistance top-up]
+    examples: []
+  - code: "6800"
+    name: Affiliate Organization Funding
+    zoho_category_id: "7490232000002746565"
+    budget_category: Programs, Grants & Student Support
+    formerly: "780"
+    finance_only: false
+    usage: Approved funding to affiliate organizations.
+    keywords: [affiliate, ao, student group funding, club, ao funding, club event, trainee talks]
+    examples:
+      - text: Affiliate organization conference sponsorship
+        report_number: ER-01111
+        report_id: "7490232000002666008"
+      - text: Affiliate organization social event funding
+        report_number: ER-01163
+        report_id: "7490232000003264024"
+  - code: "7100"
+    name: PT Staff Costs - Other Restricted
+    zoho_category_id: "7490232000002746609"
+    budget_category: Programs, Grants & Student Support
+    formerly: "810"
+    finance_only: false
+    usage: Part-time staffing paid from restricted (grant) funds when no specific restricted line applies.
+    keywords: [grant staff, restricted staff, restricted part-time, grant wages]
+    examples: []
+  - code: "7410"
+    name: Grant 1 – FSI
+    zoho_category_id: "7490232000003325107"
+    budget_category: Programs, Grants & Student Support
+    formerly: "841"
+    finance_only: false
+    usage: Food Security Initiatives grant spending, such as the baby hamper and food hub projects. The meal subsidy program is 6340, not this line.
+    keywords: [food security, fsi, baby hamper, hamper, food bank, groceries, food hub, freezer]
+    examples:
+      - text: Baby hamper project supplies
+        report_number: ER-01171
+        report_id: "7490232000003264910"
+      - text: Freezer for the food hub project
+        report_number: ER-01121
+        report_id: "7490232000002795017"
+  - code: "7490"
+    name: Other Grant Expenses - Restricted
+    zoho_category_id: "7490232000002746613"
+    budget_category: Programs, Grants & Student Support
+    formerly: "849"
+    finance_only: false
+    usage: Restricted grant spending that has no dedicated line. Must match a restricted grant revenue.
+    keywords: [grant, restricted grant, stears, grant payout, restricted fund]
+    examples:
+      - text: Restricted fund payout to a partner network
+        report_number: ER-01126
+        report_id: "7490232000002883001"
+  - code: "7700"
+    name: GSFA Expenses - Membership Contributions
+    zoho_category_id: "7490232000002746617"
+    budget_category: Programs, Grants & Student Support
+    formerly: "870"
+    finance_only: false
+    usage: GSFA awards funded by membership contributions.
+    keywords: [gsfa, financial aid, bursary, award, financial assistance, membership contribution]
+    examples:
+      - text: Student financial assistance award
+        report_number: ER-01202
+        report_id: "7490232000003779025"
+  - code: "7900"
+    name: CPIF Capital Project Expenses
+    zoho_category_id: "7490232000002746621"
+    budget_category: Programs, Grants & Student Support
+    formerly: "890"
+    finance_only: false
+    usage: Approved capital project spending from the Capital Improvement Fund (CPIF).
+    keywords: [cpif, capital project, renovation, capital improvement, chairs, furniture, junk removal, capital]
+    examples:
+      - text: Capital project furniture purchase
+        report_number: ER-01142
+        report_id: "7490232000003000606"
+      - text: Removal of old furniture and equipment
+        report_number: ER-01142
+        report_id: "7490232000003000606"
+  - code: "7910"
+    name: CPIF Fund Investment Allocation
+    zoho_category_id: "7490232000002746625"
+    budget_category: Programs, Grants & Student Support
+    formerly: "891"
+    finance_only: true
+    usage: Allocation of investment activity to the CPIF. Journal entries only.
+    keywords: [cpif, investment, investment allocation, fund investment]
+    examples: []
+  - code: "7990"
+    name: Other Expenses - Restricted
+    zoho_category_id: "7490232000002746629"
+    budget_category: Programs, Grants & Student Support
+    formerly: "899"
+    finance_only: false
+    usage: Restricted spending only when no other restricted line fits. Needs FO sign-off.
+    keywords: [other restricted]
+    examples: []
+
+  # ---------------------------------------------------------------- Operations, Facilities & IT
+  - code: "6500"
+    name: Occupancy (Lease Agreement)
+    zoho_category_id: "7490232000002746485"
+    budget_category: Operations, Facilities & IT
+    formerly: "750"
+    finance_only: false
+    usage: Rent and occupancy costs under the lease.
+    keywords: [rent, lease, occupancy, ubc services levy, ubc levy, services levy]
+    examples:
+      - text: UBC services levy under the lease
+        report_number: ER-01192
+        report_id: "7490232000003638001"
+  - code: "6510"
+    name: Temporary Commercial Activity
+    zoho_category_id: "7490232000002746489"
+    budget_category: Operations, Facilities & IT
+    formerly: "751"
+    finance_only: false
+    usage: Fees and costs of temporary commercial activity approvals.
+    keywords: [tca, commercial activity permit, liquor licence, special event permit, temporary commercial, pop-up, vendor, commercial activity]
+    examples: []
+  - code: "6520"
+    name: Repairs & Maintenance
+    zoho_category_id: "7490232000002746493"
+    budget_category: Operations, Facilities & IT
+    formerly: "752"
+    finance_only: false
+    usage: Repairs and maintenance of the premises and equipment.
+    keywords: [repair, maintenance, plumber, electrician, locksmith, keys, cleaning, install, fix, dispenser, plumbing]
+    examples:
+      - text: Soap and paper towel dispenser installation
+        report_number: ER-01214
+        report_id: "7490232000003841036"
+  - code: "6530"
+    name: Equipment
+    zoho_category_id: "7490232000002746497"
+    budget_category: Operations, Facilities & IT
+    formerly: "753"
+    finance_only: false
+    usage: Equipment purchases and replacements that are not capitalized, such as furniture, appliances and computers.
+    keywords: [equipment, furniture, laptop, monitor, appliance, speaker, projector, keyboard, adapter, camera, small equipment]
+    examples:
+      - text: Laptop sleeves and USB-C cables
+        report_number: ER-01124
+        report_id: "7490232000002880001"
+  - code: "6540"
+    name: Office Supplies
+    zoho_category_id: "7490232000003318627"
+    budget_category: Operations, Facilities & IT
+    formerly: "754"
+    finance_only: false
+    usage: Office consumables and general office supplies, including the office water service and postage.
+    keywords: [stationery, paper, printer ink, toner, pens, water, postage, courier, kitchen supplies, office supplies, snacks, shredder]
+    examples:
+      - text: Monthly office water delivery
+        report_number: ER-01129
+        report_id: "7490232000002881071"
+      - text: Paper shredder for the office
+        report_number: ER-01142
+        report_id: "7490232000003000606"
+  - code: "6550"
+    name: Insurance
+    zoho_category_id: "7490232000002746501"
+    budget_category: Operations, Facilities & IT
+    formerly: "755"
+    finance_only: false
+    usage: Insurance premiums and related charges.
+    keywords: [insurance, premium, liability, d&o, policy, endorsement, broker]
+    examples:
+      - text: Annual commercial insurance premium
+        report_number: ER-01164
+        report_id: "7490232000003264035"
+  - code: "6560"
+    name: IT Services and Digital Subscriptions
+    zoho_category_id: "7490232000002746505"
+    budget_category: Operations, Facilities & IT
+    formerly: "756"
+    finance_only: false
+    usage: IT services, software, licences, cloud services, domains and digital subscriptions.
+    keywords: [software, subscription, zoho, google workspace, domain, website hosting, zoom, canva, adobe, it support, microsoft, quickbooks, web hosting, it, phone lines]
+    examples:
+      - text: Monthly Adobe subscription
+        report_number: ER-01120
+        report_id: "7490232000002731140"
+      - text: UBC IT network services
+        report_number: ER-01184
+        report_id: "7490232000003515002"
+      - text: Annual accounting software subscription
+        report_number: ER-01165
+        report_id: "7490232000003264061"
+  - code: "6570"
+    name: Marketing, Advertising & Promotion
+    zoho_category_id: "7490232000002746509"
+    budget_category: Operations, Facilities & IT
+    formerly: "757"
+    finance_only: false
+    usage: Marketing, advertising, printing of promotional material and branded giveaways.
+    keywords: [advertising, ads, social media, posters, flyers, printing, swag, giveaway, promotion, marketing, gift card prize, poster]
+    examples:
+      - text: Gift card prize for a student promotion
+        report_number: ER-01197
+        report_id: "7490232000003727046"
+  - code: "6580"
+    name: Bank & Financial Services Fees & Charges
+    zoho_category_id: "7490232000002746569"
+    budget_category: Operations, Facilities & IT
+    formerly: "758"
+    finance_only: true
+    usage: Rollup for bank and processor fees. Post to 6581-6585, not here.
+    keywords: [bank fees, service charge, merchant fees]
+    examples: []
+  - code: "6581"
+    name: Square Processing Fees
+    zoho_category_id: "7490232000002746573"
+    budget_category: Operations, Facilities & IT
+    formerly: "758"
+    finance_only: false
+    usage: Payment processing fees charged by Square.
+    keywords: [square, card processing fees, pos, processing fees, card fees]
+    examples: []
+  - code: "6584"
+    name: Plooto Transaction Fees
+    zoho_category_id: "7490232000002746577"
+    budget_category: Operations, Facilities & IT
+    formerly: "758"
+    finance_only: false
+    usage: Transaction fees and subscription charged by Plooto.
+    keywords: [plooto, payment fees, transaction fee, payment platform]
+    examples: []
+  - code: "6585"
+    name: Payworks Service Fees
+    zoho_category_id: "7490232000002746581"
+    budget_category: Operations, Facilities & IT
+    formerly: "758"
+    finance_only: false
+    usage: Payroll service fees charged by Payworks.
+    keywords: [payworks, payroll fees, payroll fee, service fee]
+    examples: []
+
+  # ---------------------------------------------------------------- Governance & Meetings
+  - code: "6600"
+    name: Elections Expenses
+    zoho_category_id: "7490232000002746533"
+    budget_category: Governance & Meetings
+    formerly: "760"
+    finance_only: false
+    usage: Running GSS elections and referenda.
+    keywords: [election, referendum, voting, cro, candidates, debate, campaign, ballot]
+    examples:
+      - text: Pizza for an election debate night
+        report_number: ER-01012
+        report_id: "7490232000001558101"
+      - text: Election campaign supplies
+        report_number: ER-01041
+        report_id: "7490232000001779240"
+  - code: "6610"
+    name: Executive Retreat
+    zoho_category_id: "7490232000002746537"
+    budget_category: Governance & Meetings
+    formerly: "761"
+    finance_only: false
+    usage: Executive retreat costs (venue, food, travel to the retreat).
+    keywords: [retreat, executive retreat, exec retreat, team building, escape room]
+    examples:
+      - text: Executive retreat dinner
+        report_number: ER-01132
+        report_id: "7490232000002887106"
+      - text: Executive retreat team activity
+        report_number: ER-01093
+        report_id: "7490232000002514051"
+  - code: "6620"
+    name: Council & Committee Retreat
+    zoho_category_id: "7490232000002746541"
+    budget_category: Governance & Meetings
+    formerly: "762"
+    finance_only: false
+    usage: Council or committee retreat costs.
+    keywords: [retreat, council retreat, committee retreat]
+    examples:
+      - text: Food for the Council retreat
+        report_number: ER-01102
+        report_id: "7490232000002555160"
+  - code: "6640"
+    name: Meeting Expenses - Executives
+    zoho_category_id: "7490232000002746549"
+    budget_category: Governance & Meetings
+    formerly: "764"
+    finance_only: false
+    usage: Food, room booking and other costs of meetings held by executives, including meetings with external parties.
+    keywords: [meeting, lunch meeting, coffee, catering, exec meeting, coffee meeting, ombudsperson, ams, meeting food]
+    examples:
+      - text: Lunch meeting with AMS executives
+        report_number: ER-01087
+        report_id: "7490232000002370233"
+      - text: Coffee meeting with the Ombudsperson
+        report_number: ER-01147
+        report_id: "7490232000003008004"
+  - code: "6650"
+    name: Meeting Expenses - Council & Committees
+    zoho_category_id: "7490232000002746553"
+    budget_category: Governance & Meetings
+    formerly: "765"
+    finance_only: false
+    usage: Food and other costs of Council and committee meetings.
+    keywords: [council meeting, committee meeting, catering, pizza, hfc, council, committee, attendance, meeting pay, meeting food]
+    examples:
+      - text: Food for a Council meeting
+        report_number: ER-01007
+        report_id: "7490232000001545498"
+      - text: Council and committee meeting attendance pay
+        report_number: ER-01149
+        report_id: "7490232000003114029"
+  - code: "6660"
+    name: Meeting Expenses - Annual General Meetings
+    zoho_category_id: "7490232000002746557"
+    budget_category: Governance & Meetings
+    formerly: "766"
+    finance_only: false
+    usage: Costs of the Annual General Meeting.
+    keywords: [agm, annual general meeting, general meeting, door prize, speaker fee]
+    examples:
+      - text: Door prize gift card for the AGM
+        report_number: ER-01050
+        report_id: "7490232000001932052"
+
+  # ---------------------------------------------------------------- Travel & Conferences
+  - code: "6630"
+    name: Travel, Conferences & Lobbying Dues
+    zoho_category_id: "7490232000002746545"
+    budget_category: Travel & Conferences
+    formerly: "763"
+    finance_only: false
+    usage: Approved travel, conference registration, accommodation, transport, and lobbying or membership dues.
+    keywords: [travel, flight, hotel, conference, registration, taxi, uber, per diem, dues, membership, flights, lobbying, advocacy, abcs]
+    examples:
+      - text: Flights for a lobbying conference
+        report_number: ER-01220
+        report_id: "7490232000004026009"
+      - text: Advocacy conference observer fee
+        report_number: ER-01034
+        report_id: "7490232000001669234"
+      - text: Provincial student alliance membership fees
+        report_number: ER-01189
+        report_id: "7490232000003612002"
+
+  # ---------------------------------------------------------------- Other / Residual
+  - code: "6900"
+    name: Penalties & Interest
+    zoho_category_id: "7490232000002746513"
+    budget_category: Other / Residual
+    formerly: ""
+    finance_only: true
+    usage: CRA and WorkSafeBC interest and penalties.
+    keywords: [penalty, interest, cra, late fee, remittance]
+    examples: []
+  - code: "6910"
+    name: Non-recoverable GST/PST
+    zoho_category_id: "7490232000002746517"
+    budget_category: Other / Residual
+    formerly: ""
+    finance_only: true
+    usage: Sales tax with no input tax credit available. Accounting entries only.
+    keywords: [gst, pst, sales tax, non-recoverable gst, tax, no itc]
+    examples: []
+  - code: "6920"
+    name: Customer Refunds
+    zoho_category_id: "7490232000002746521"
+    budget_category: Other / Residual
+    formerly: ""
+    finance_only: false
+    usage: Refunds to students or clients for cancelled events or overpayments. Needs an approved refund form.
+    keywords: [refund, ticket refund, overpayment, cancelled event, chargeback]
+    examples: []
+  - code: "6980"
+    name: Amortization & Depreciation
+    zoho_category_id: "7490232000002746525"
+    budget_category: Other / Residual
+    formerly: ""
+    finance_only: true
+    usage: Amortization and depreciation of capital assets. Year-end entries only.
+    keywords: [depreciation, amortization, capital asset]
+    examples: []
+  - code: "6990"
+    name: Other Expenses - Operating
+    zoho_category_id: "7490232000002746529"
+    budget_category: Other / Residual
+    formerly: "799"
+    finance_only: false
+    usage: Operating spending only when no other line fits. Check with the Financial Officer first.
+    keywords: [other, miscellaneous, donation]
+    examples: []
+  - code: "6992"
+    name: GST/PST Paid
+    zoho_category_id: "7490232000000296741"
+    budget_category: Other / Residual
+    formerly: ""
+    finance_only: true
+    usage: Sales tax account used by Zoho. Accounting entries only.
+    keywords: [gst, pst, gst paid, pst paid, tax]
+    examples: []
