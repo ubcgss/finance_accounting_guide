@@ -1,0 +1,22 @@
+<div class="budget-search">
+  <label for="budget-search-input"><strong>What did you buy?</strong></label>
+  <input id="budget-search-input" type="search" autocomplete="off"
+         placeholder="Try &quot;linens&quot;, &quot;water&quot;, &quot;pizza&quot;, &quot;flight&quot;, &quot;software&quot;">
+  <div id="budget-search-results" aria-live="polite"></div>
+</div>
+
+<style>
+  .budget-search input { width: 100%; padding: 0.5rem 0.75rem; margin: 0.4rem 0 0.75rem; font-size: 1rem;
+    border: 1px solid #bbb; border-radius: 4px; }
+  .budget-result { border: 1px solid #e3e3e3; border-left: 4px solid #7253ed; border-radius: 4px;
+    padding: 0.6rem 0.9rem; margin-bottom: 0.6rem; }
+  .budget-result .line { font-weight: 600; }
+  .budget-result .cat { font-size: 0.85em; color: #555; }
+  .budget-result ul { margin: 0.3rem 0 0; }
+  .budget-result .finance-only { color: #a01b1b; font-size: 0.85em; }
+</style>
+
+<script>
+  window.BUDGET_LINES = {{ site.data.budget_lines | jsonify }};
+</script>
+<script src="{{ '/assets/js/budget-search.js' | relative_url }}"></script>

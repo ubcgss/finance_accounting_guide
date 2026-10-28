@@ -102,15 +102,15 @@ YYYY-MM | ##-DEPT | Category | Short description
 
 Use these category names in the `Category` part of report titles:
 
-| Category | Use For (Expense Account Codes) |
-|----------|----------------------------------|
-| `Compensation & Staff Support` | `700`, `701`, `702`, `704`, `705`, `706`, `710`, `715`, `730`, `731`, `740`, `880`, `881`, `883` |
-| `Professional & Contracted Services` | `720`, `725` |
-| `Operations, Facilities & IT` | `750`, `751`, `752`, `753`, `760`, `761`, `770`, `800`, `810` |
-| `Governance & Meetings` | `820`, `830`, `835`, `845`, `850`, `855`, `866`, `870`, `872` |
-| `Travel & Conferences` | `840` |
-| `Programs, Grants & Student Support` | `785`, `860`, `861`, `862`, `863`, `864`, `865`, `885`, `886`, `887` |
-| `Other / Residual` | `899` |
+| Category | Use For (Budget Line codes) |
+|----------|-----------------------------|
+| `Compensation & Staff Support` | `6000`–`6190` |
+| `Professional & Contracted Services` | `6200` |
+| `Operations, Facilities & IT` | `6500`–`6585` |
+| `Governance & Meetings` | `6600`, `6610`, `6620`, `6640`, `6650`, `6660` |
+| `Travel & Conferences` | `6630` |
+| `Programs, Grants & Student Support` | `6300`–`6340`, `6700`, `6800`, `7100`–`7990` |
+| `Other / Residual` | `6900`–`6992` |
 
 {: .note }
 > For detailed Budget Line code selection guidance by spending purpose, see [Budget Categories]({% link docs/zoho-expense/budget-categories.md %}).

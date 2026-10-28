@@ -1,0 +1,5 @@
+---
+layout: null
+permalink: /assets/data/budget_lines.json
+---
+{{ site.data.budget_lines | jsonify }}
