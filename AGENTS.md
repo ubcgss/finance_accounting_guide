@@ -21,6 +21,7 @@ Production URL: `https://ubcgss.github.io/finance_accounting_guide/`
 - Use concise, policy-consistent language suitable for GSS staff and officers.
 - Do not commit generated Jekyll output from `_site/`.
 - Do not revert unrelated local changes.
+- Do not add "Co-Authored-By: Claude" trailers to commit messages or Claude Code attribution to PR descriptions (also disabled in `.claude/settings.json`).
 - After content or site changes, suggest the standard GitHub workflow: `git add`, `git commit`, `git pull --rebase origin main`, `git push origin main`.
 
 ## Commands
