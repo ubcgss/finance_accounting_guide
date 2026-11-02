@@ -59,6 +59,11 @@ projects:
     fiscal_year: "2025-26"
   - customer: Meal Subsidy Program
     customer_id: "7490232000000621053"
+    project: Meal Subsidy Program 26-27 AY
+    project_id: "7490232000004417014"
+    fiscal_year: "2026-27"
+  - customer: Meal Subsidy Program
+    customer_id: "7490232000000621053"
     project: Meal Subsidy Program 25-26 AY
     project_id: "7490232000000805101"
     fiscal_year: "2025-26"
