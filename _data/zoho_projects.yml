@@ -1,0 +1,74 @@
+# Zoho customers and projects that GSS tracks by fiscal year (org 903421237).
+#
+# Single source for:
+#   - docs/zoho-expense/zoho-projects.md (the current projects table)
+#   - assets/data/zoho_projects.json, which the review-zoho-reports Claude skill fetches
+#
+# The Zoho connector cannot list projects, so this file is how the skill knows what exists. When
+# a project is created in Zoho, add it here in the same week.
+#
+# Fields:
+#   tracked_lines -- budget lines whose expenses must carry a customer and project. All other
+#                    expenses do not need one.
+#     codes       -- budget line codes, as in budget_lines.yml
+#     evidence    -- lowercase word that must appear in the report or line text for the line to
+#                    count, because the budget line is shared (7410 also covers the food hub).
+#                    Empty means every line with that code is tracked.
+#   projects      -- one row per project
+#     fiscal_year -- GSS fiscal year (June 1 to May 31) of the expenses that belong on it,
+#                    whatever AY or FY suffix the project name carries
+
+tracked_lines:
+  - codes: ["7700", "6700"]
+    customer: GSFA Project
+    customer_id: "7490232000000665112"
+    evidence: ""
+  - codes: ["7410"]
+    customer: Baby Hamper Project
+    customer_id: "7490232000000621035"
+    evidence: hamper
+  - codes: ["6340"]
+    customer: Meal Subsidy Program
+    customer_id: "7490232000000621053"
+    evidence: ""
+  - codes: ["6800"]
+    customer: AO Funding
+    customer_id: "7490232000000621017"
+    evidence: ""
+
+projects:
+  - customer: GSFA Project
+    customer_id: "7490232000000665112"
+    project: GSFA 26-27 FY
+    project_id: "7490232000003570001"
+    fiscal_year: "2026-27"
+  - customer: GSFA Project
+    customer_id: "7490232000000665112"
+    project: GSFA 25-26 AY
+    project_id: "7490232000000665126"
+    fiscal_year: "2025-26"
+  - customer: Baby Hamper Project
+    customer_id: "7490232000000621035"
+    project: Baby Hamper Project 26-27 AY
+    project_id: "7490232000003686666"
+    fiscal_year: "2026-27"
+  - customer: Baby Hamper Project
+    customer_id: "7490232000000621035"
+    project: Baby Hamper Project 25-26 AY
+    project_id: "7490232000000805089"
+    fiscal_year: "2025-26"
+  - customer: Meal Subsidy Program
+    customer_id: "7490232000000621053"
+    project: Meal Subsidy Program 25-26 AY
+    project_id: "7490232000000805101"
+    fiscal_year: "2025-26"
+  - customer: AO Funding
+    customer_id: "7490232000000621017"
+    project: AO Funding 26-27 FY
+    project_id: "7490232000002731326"
+    fiscal_year: "2026-27"
+  - customer: AO Funding
+    customer_id: "7490232000000621017"
+    project: AO Funding 25-26 FY
+    project_id: "7490232000000805095"
+    fiscal_year: "2025-26"

@@ -15,6 +15,25 @@ permalink: /zoho/projects/
 {: .important }
 > Projects follow the GSS fiscal year (June 1 — May 31). At the start of each fiscal year, create new projects for recurring initiatives with the updated year code.
 
+## Current Projects
+
+Expenses on these budget lines must carry a customer and project. Other expenses don't need one.
+
+| Budget lines | Customer |
+|--------------|----------|
+{% for tracked in site.data.zoho_projects.tracked_lines %}| {% for code in tracked.codes %}`{{ code }}`{% unless forloop.last %}, {% endunless %}{% endfor %}{% if tracked.evidence != "" %} ({{ tracked.evidence }} expenses only){% endif %} | {{ tracked.customer }} |
+{% endfor %}
+
+Choose the project for the fiscal year of the expense date, whatever AY or FY suffix its name has. An expense dated on or after June 1, 2026 goes on the 2026-27 project.
+
+| Customer | Project | Fiscal year |
+|----------|---------|-------------|
+{% for project in site.data.zoho_projects.projects %}| {{ project.customer }} | {{ project.project }} | {{ project.fiscal_year }} |
+{% endfor %}
+
+{: .note }
+> When you create a project in Zoho, add it to `_data/zoho_projects.yml` in the same week. This table and the Claude report review read from that file.
+
 ## How to Create a New Project
 1. **Navigate to Project Settings**
    - Go to the Zoho Expense organization project settings page: https://expense.zoho.com/app/ORGNUMBER#/settings/projects
