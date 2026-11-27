@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Budget Integrity Check - UBC GSS</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --accent: #00797a;
+      --accent-hover: #006162;
+      --accent-soft: rgba(0, 121, 122, 0.10);
+      --bg: #f6f8f9;
+      --surface: #ffffff;
+      --surface-muted: #f0f4f5;
+      --text: #1b2428;
+      --text-muted: #526066;
+      --border: #d5dde0;
+      --zebra: #f8fafb;
+      --code-bg: #eef2f4;
+      --high-bg: #fdecec;
+      --high-text: #a61b1b;
+      --high-border: #f3b7b7;
+      --review-bg: #fef6e6;
+      --review-text: #8c5300;
+      --review-border: #f3d299;
+      --error-bg: #fdf0f0;
+      --error-text: #8f1d1d;
+      --error-border: #e5a3a3;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --accent: #22a6a8;
+        --accent-hover: #2ec0c2;
+        --accent-soft: rgba(34, 166, 168, 0.16);
+        --bg: #111618;
+        --surface: #182023;
+        --surface-muted: #1f2a2e;
+        --text: #e6ecef;
+        --text-muted: #9eb0b7;
+        --border: #2c3a40;
+        --zebra: #1d262a;
+        --code-bg: #232f34;
+        --high-bg: #3b1818;
+        --high-text: #f9a8a8;
+        --high-border: #7a2e2e;
+        --review-bg: #382810;
+        --review-text: #f7cd7c;
+        --review-border: #75531a;
+        --error-bg: #351717;
+        --error-text: #f6b0b0;
+        --error-border: #783030;
+        --shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+      }
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.55;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 28px 16px 48px;
+    }
+
+    header {
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 0 0 6px;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      line-height: 1.25;
+      margin: 0 0 14px;
+    }
+
+    .intro-card {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .intro-card h2 {
+      font-size: 0.95rem;
+      margin: 0 0 8px;
+    }
+
+    .check-list {
+      margin: 0 0 10px;
+      padding-left: 20px;
+      color: var(--text);
+    }
+
+    .check-list li {
+      margin: 3px 0;
+    }
+
+    .scope-note {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .privacy-banner {
+      margin: 20px 0 12px;
+      padding: 12px 16px;
+      background-color: var(--accent-soft);
+      border-left: 4px solid var(--accent);
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 14px;
+      padding: 10px 14px;
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex: 0 0 auto;
+      background-color: var(--text-muted);
+    }
+
+    .status-bar[data-state="loading"] .status-dot,
+    .status-bar[data-state="checking"] .status-dot {
+      background-color: var(--accent);
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+
+    .status-bar[data-state="ready"] .status-dot {
+      background-color: var(--accent);
+    }
+
+    .status-bar[data-state="error"] .status-dot {
+      background-color: var(--high-text);
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.35; }
+      50% { opacity: 1; }
+    }
+
+    .drop-zone {
+      background-color: var(--surface);
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 38px 20px;
+      text-align: center;
+      transition: border-color 0.15s ease, background-color 0.15s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .drop-zone.is-disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .drop-zone:not(.is-disabled) {
+      cursor: pointer;
+    }
+
+    .drop-zone:not(.is-disabled):hover,
+    .drop-zone.is-dragover {
+      border-color: var(--accent);
+      background-color: var(--accent-soft);
+    }
+
+    .drop-title {
+      margin: 0 0 6px;
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+
+    .drop-subtitle {
+      margin: 0 0 16px;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 16px;
+      border-radius: 7px;
+      border: 1px solid transparent;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background-color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+    }
+
+    .btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background-color: var(--accent);
+      color: #ffffff;
+    }
+
+    .btn-primary:not(:disabled):hover {
+      background-color: var(--accent-hover);
+    }
+
+    .btn-secondary {
+      background-color: var(--surface);
+      color: var(--text);
+      border-color: var(--border);
+    }
+
+    .btn-secondary:not(:disabled):hover {
+      background-color: var(--surface-muted);
+    }
+
+    .error-box {
+      margin-top: 16px;
+      padding: 16px 18px;
+      background-color: var(--error-bg);
+      color: var(--error-text);
+      border: 1px solid var(--error-border);
+      border-radius: 10px;
+    }
+
+    .error-lead {
+      margin: 0 0 8px;
+      font-weight: 700;
+    }
+
+    .error-detail {
+      margin: 0;
+      padding: 10px 12px;
+      background-color: rgba(0, 0, 0, 0.06);
+      border-radius: 6px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.8125rem;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .results-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 20px 0 16px;
+    }
+
+    .results-file {
+      margin: 0;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      overflow-wrap: anywhere;
+    }
+
+    .results-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 540px) {
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .tile {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .tile-label {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .tile-value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    .tile-high {
+      border-color: var(--high-border);
+      background-color: var(--high-bg);
+      color: var(--high-text);
+    }
+
+    .tile-high .tile-label {
+      color: var(--high-text);
+    }
+
+    .tile-review {
+      border-color: var(--review-border);
+      background-color: var(--review-bg);
+      color: var(--review-text);
+    }
+
+    .tile-review .tile-label {
+      color: var(--review-text);
+    }
+
+    .report-card {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 22px;
+      box-shadow: var(--shadow);
+      max-width: 100%;
+    }
+
+    .report-card h1,
+    .report-card h2,
+    .report-card h3 {
+      margin-top: 1.4em;
+      margin-bottom: 0.5em;
+      line-height: 1.3;
+    }
+
+    .report-card > :first-child {
+      margin-top: 0;
+    }
+
+    .report-card code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.875em;
+      background-color: var(--code-bg);
+      padding: 1px 5px;
+      border-radius: 4px;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .table-scroll {
+      width: 100%;
+      max-width: 100%;
+      max-height: 70vh;
+      overflow: auto;
+      margin: 12px 0 20px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .table-scroll table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+
+    .table-scroll thead th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background-color: var(--surface-muted);
+      color: var(--text);
+      text-align: left;
+      font-weight: 600;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .table-scroll tbody td {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .table-scroll tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .table-scroll tbody tr:nth-child(even) td {
+      background-color: var(--zebra);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+    }
+
+    .badge-high {
+      background-color: var(--high-bg);
+      color: var(--high-text);
+      border: 1px solid var(--high-border);
+    }
+
+    .badge-review {
+      background-color: var(--review-bg);
+      color: var(--review-text);
+      border: 1px solid var(--review-border);
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header>
+      <p class="eyebrow">UBC Graduate Student Society</p>
+      <h1>Budget Integrity Check</h1>
+      <section class="intro-card" aria-label="What this checks">
+        <h2>What this checks</h2>
+        <ul class="check-list">
+          <li>Parameters with expired or missing sources</li>
+          <li>Rolled-forward formulas</li>
+          <li>Hard-coded numbers</li>
+          <li>Internal consistency</li>
+          <li>Required lines</li>
+        </ul>
+        <p class="scope-note">This checks the budget itself. Budget vs. actuals is a separate report.</p>
+      </section>
+    </header>
+
+    <p class="privacy-banner">
+      Your file is read inside this browser tab. It is never uploaded anywhere.
+    </p>
+
+    <div id="status-bar" class="status-bar" data-state="loading" role="status" aria-live="polite">
+      <span class="status-dot" aria-hidden="true"></span>
+      <span id="status-text">Loading the checker (first time takes about 10 seconds)...</span>
+    </div>
+
+    <section id="drop-zone" class="drop-zone is-disabled" aria-label="Workbook upload">
+      <p class="drop-title">Drop your budget master workbook (.xlsx)</p>
+      <p class="drop-subtitle">Works with the annual budget master Excel file</p>
+      <button id="choose-btn" type="button" class="btn btn-primary" disabled>Choose file</button>
+      <input id="file-input" type="file" accept=".xlsx" hidden>
+    </section>
+
+    <div id="error-box" class="error-box hidden" role="alert">
+      <p class="error-lead">This file may not be the budget master, or the checker needs updating.</p>
+      <pre id="error-detail" class="error-detail"></pre>
+    </div>
+
+    <section id="results-section" class="hidden" aria-label="Check results">
+      <div class="results-header">
+        <p id="results-file" class="results-file"></p>
+        <div class="results-actions">
+          <button id="download-btn" type="button" class="btn btn-primary">Download report (.md)</button>
+          <button id="reset-btn" type="button" class="btn btn-secondary">Check another file</button>
+        </div>
+      </div>
+
+      <div class="summary-grid">
+        <div class="tile tile-high">
+          <div class="tile-label">High</div>
+          <div id="count-high" class="tile-value">0</div>
+        </div>
+        <div class="tile tile-review">
+          <div class="tile-label">Review</div>
+          <div id="count-review" class="tile-value">0</div>
+        </div>
+        <div class="tile">
+          <div class="tile-label">Total</div>
+          <div id="count-total" class="tile-value">0</div>
+        </div>
+      </div>
+
+      <article id="report-content" class="report-card"></article>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+  <script>
+    const CHECKER_URL = "budget_checks.py";
+
+    const statusBar = document.getElementById("status-bar");
+    const statusText = document.getElementById("status-text");
+    const dropZone = document.getElementById("drop-zone");
+    const chooseBtn = document.getElementById("choose-btn");
+    const fileInput = document.getElementById("file-input");
+    const errorBox = document.getElementById("error-box");
+    const errorDetail = document.getElementById("error-detail");
+    const resultsSection = document.getElementById("results-section");
+    const resultsFile = document.getElementById("results-file");
+    const countHighEl = document.getElementById("count-high");
+    const countReviewEl = document.getElementById("count-review");
+    const countTotalEl = document.getElementById("count-total");
+    const reportContent = document.getElementById("report-content");
+    const downloadBtn = document.getElementById("download-btn");
+    const resetBtn = document.getElementById("reset-btn");
+
+    let pyodide = null;
+    let isReady = false;
+    let isChecking = false;
+    let latestMarkdown = "";
+    let latestWorkbookName = "";
+    let latestDateStr = "";
+
+    function setStatus(state, message) {
+      statusBar.dataset.state = state;
+      statusText.textContent = message;
+    }
+
+    function showError(err) {
+      console.error(err);
+      const message = err && err.message ? err.message : String(err);
+      errorDetail.textContent = message;
+      errorBox.classList.remove("hidden");
+      setStatus("error", "Check failed.");
+    }
+
+    function clearError() {
+      errorDetail.textContent = "";
+      errorBox.classList.add("hidden");
+    }
+
+    function padTwo(num) {
+      return String(num).padStart(2, "0");
+    }
+
+    function formatLocalTimestamp(date) {
+      const yyyy = date.getFullYear();
+      const mm = padTwo(date.getMonth() + 1);
+      const dd = padTwo(date.getDate());
+      const hh = padTwo(date.getHours());
+      const min = padTwo(date.getMinutes());
+      return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+    }
+
+    function formatLocalDate(date) {
+      const yyyy = date.getFullYear();
+      const mm = padTwo(date.getMonth() + 1);
+      const dd = padTwo(date.getDate());
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    function waitForNextPaint() {
+      return new Promise((resolve) => {
+        requestAnimationFrame(() => {
+          setTimeout(resolve, 0);
+        });
+      });
+    }
+
+    function postProcessReport(container) {
+      const tables = container.querySelectorAll("table");
+      for (const table of tables) {
+        const wrapper = document.createElement("div");
+        wrapper.className = "table-scroll";
+        table.parentNode.insertBefore(wrapper, table);
+        wrapper.appendChild(table);
+      }
+
+      const cells = container.querySelectorAll("td");
+      for (const td of cells) {
+        const value = td.textContent.trim();
+        if (value === "high" || value === "review") {
+          td.textContent = "";
+          const badge = document.createElement("span");
+          badge.className = `badge badge-${value}`;
+          badge.textContent = value;
+          td.appendChild(badge);
+        }
+      }
+    }
+
+    async function initChecker() {
+      try {
+        setStatus("loading", "Loading the checker (first time takes about 10 seconds)...");
+        pyodide = await loadPyodide();
+        await pyodide.loadPackage("micropip");
+        await pyodide.runPythonAsync('import micropip\nawait micropip.install("openpyxl")');
+
+        const response = await fetch(CHECKER_URL);
+        if (!response.ok) {
+          throw new Error(`Could not load ${CHECKER_URL} (HTTP ${response.status})`);
+        }
+        const checkerSource = await response.text();
+        pyodide.FS.writeFile("/home/pyodide/budget_checks.py", checkerSource);
+        pyodide.runPython("import budget_checks");
+
+        isReady = true;
+        dropZone.classList.remove("is-disabled");
+        chooseBtn.disabled = false;
+        setStatus("ready", "Ready. Drop the budget master here.");
+      } catch (err) {
+        showError(err);
+      }
+    }
+
+    async function runCheckOnFile(file) {
+      if (!isReady || isChecking || !file) {
+        return;
+      }
+
+      isChecking = true;
+      chooseBtn.disabled = true;
+      dropZone.classList.add("is-disabled");
+      clearError();
+      resultsSection.classList.add("hidden");
+      setStatus("checking", "Checking...");
+
+      try {
+        await waitForNextPaint();
+
+        const buffer = await file.arrayBuffer();
+        pyodide.FS.writeFile("/tmp/budget.xlsx", new Uint8Array(buffer));
+
+        const now = new Date();
+        const generatedAt = formatLocalTimestamp(now);
+        const dateStr = formatLocalDate(now);
+
+        pyodide.globals.set("js_filename", file.name);
+        pyodide.globals.set("js_generated_at", generatedAt);
+
+        pyodide.runPython([
+          "findings = budget_checks.run_checks('/tmp/budget.xlsx')",
+          "md_report = budget_checks.render_markdown(findings, js_filename, js_generated_at)",
+          "high_count = sum(1 for f in findings if f.get('severity') == 'high')",
+          "review_count = sum(1 for f in findings if f.get('severity') == 'review')",
+          "total_count = len(findings)"
+        ].join("\n"));
+
+        latestMarkdown = pyodide.globals.get("md_report");
+        const highCount = pyodide.globals.get("high_count");
+        const reviewCount = pyodide.globals.get("review_count");
+        const totalCount = pyodide.globals.get("total_count");
+
+        latestWorkbookName = file.name.replace(/\.xlsx$/i, "");
+        latestDateStr = dateStr;
+
+        resultsFile.textContent = `Checked ${file.name} at ${generatedAt}`;
+        countHighEl.textContent = String(highCount);
+        countReviewEl.textContent = String(reviewCount);
+        countTotalEl.textContent = String(totalCount);
+
+        reportContent.innerHTML = marked.parse(latestMarkdown, { gfm: true });
+        postProcessReport(reportContent);
+
+        dropZone.classList.add("hidden");
+        resultsSection.classList.remove("hidden");
+        setStatus("ready", `Done. ${totalCount} finding(s) found.`);
+      } catch (err) {
+        showError(err);
+      } finally {
+        try {
+          pyodide.FS.unlink("/tmp/budget.xlsx");
+        } catch (cleanupErr) {
+          // Ignore missing temp file if reading failed before write.
+        }
+        isChecking = false;
+        chooseBtn.disabled = false;
+        dropZone.classList.remove("is-disabled");
+      }
+    }
+
+    chooseBtn.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (!isReady || isChecking) {
+        return;
+      }
+      fileInput.click();
+    });
+
+    dropZone.addEventListener("click", () => {
+      if (!isReady || isChecking) {
+        return;
+      }
+      fileInput.click();
+    });
+
+    dropZone.addEventListener("dragover", (event) => {
+      event.preventDefault();
+      if (!isReady || isChecking) {
+        return;
+      }
+      dropZone.classList.add("is-dragover");
+    });
+
+    dropZone.addEventListener("dragleave", () => {
+      dropZone.classList.remove("is-dragover");
+    });
+
+    dropZone.addEventListener("drop", (event) => {
+      event.preventDefault();
+      dropZone.classList.remove("is-dragover");
+      if (!isReady || isChecking) {
+        return;
+      }
+      const files = event.dataTransfer && event.dataTransfer.files;
+      if (files && files.length > 0) {
+        runCheckOnFile(files[0]);
+      }
+    });
+
+    fileInput.addEventListener("change", () => {
+      if (fileInput.files && fileInput.files.length > 0) {
+        runCheckOnFile(fileInput.files[0]);
+      }
+    });
+
+    downloadBtn.addEventListener("click", () => {
+      if (!latestMarkdown) {
+        return;
+      }
+      const blob = new Blob([latestMarkdown], { type: "text/markdown;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `Budget Integrity Check - ${latestWorkbookName} - ${latestDateStr}.md`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    });
+
+    resetBtn.addEventListener("click", () => {
+      clearError();
+      latestMarkdown = "";
+      latestWorkbookName = "";
+      latestDateStr = "";
+      fileInput.value = "";
+      reportContent.innerHTML = "";
+      resultsSection.classList.add("hidden");
+      dropZone.classList.remove("hidden");
+      setStatus("ready", "Ready. Drop the budget master here.");
+    });
+
+    initChecker();
+  </script>
+</body>
+</html>
