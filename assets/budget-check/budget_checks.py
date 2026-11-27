@@ -11,6 +11,7 @@
 #--------------------------------------------------------------------------------------------
 
 import argparse
+import calendar
 import datetime
 from pathlib import Path
 import re
@@ -50,19 +51,17 @@ DRIVER_TABS = [
     "Dept14 Events",
 ]
 PARAM_HEADERS = [
-    "Kind",
-    "Basis",
-    "Source document",
-    "Clause",
+    "Parameter",
+    "Value",
+    "Status",
     "Valid from",
     "Valid until",
-    "Previous value",
-    "Previous valid from",
-    "Previous valid until",
-    "Inflated previous",
-    "Owner",
-    "Status",
+    "Basis",
+    "Source",
+    "CPI-inflated previous",
+    "Notes",
 ]
+REQUIRED_PARAM_HEADERS = {"Parameter", "Value", "Valid from", "Valid until"}
 CPI_TOLERANCE = 0.005
 MONEY_TOLERANCE = 0.5
 
@@ -85,6 +84,24 @@ DRIVER_TAB_SET = set(DRIVER_TABS)
 MIN_COLUMN_BLOCK_FORMULAS = 3
 MIN_COLUMN_FORMULA_SHARE = 0.6
 TEXT_DASHES = {"-", "\u2013", "\u2014"}
+MONTH_ABBRS = (
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+)
+MONTH_NAME_MAP = {
+    "jan": 1, "january": 1,
+    "feb": 2, "february": 2,
+    "mar": 3, "march": 3,
+    "apr": 4, "april": 4,
+    "may": 5,
+    "jun": 6, "june": 6,
+    "jul": 7, "july": 7,
+    "aug": 8, "august": 8,
+    "sep": 9, "sept": 9, "september": 9,
+    "oct": 10, "october": 10,
+    "nov": 11, "november": 11,
+    "dec": 12, "december": 12,
+}
 
 
 ##############################################
@@ -296,28 +313,45 @@ def extract_numeric_literals(formula: str) -> list[tuple[str, float]]:
 ##########################################
 ##  (3): Budget integrity check rules.  ##
 ##########################################
-# (3.1): Rule 1 - Parameters (Assumptions metadata, CPI, named ranges, unused).
+# (3.1): Rule 1 - Parameters (Assumptions table, Status rules 1-9, unused, out-of-period).
+ASSUMPTIONS_REF_RE = re.compile(
+    r"(?:'Assumptions'|(?<![A-Za-z0-9_'.\]])Assumptions)!\$?[A-Za-z]{1,3}\$?(\d+)(?!\d)",
+    flags=re.IGNORECASE,
+)
+MONTH_HEADER_RE = re.compile(r"^\s*([A-Za-z]+)\.?(?:[\s,-]+)(\d{4})\s*$")
+
+
 def find_assumptions_header(ws) -> tuple[int | None, dict[str, int]]:
     """Find the parameter header row in rows 1..10 and map headers to columns."""
     max_scan = min(10, ws.max_row)
     for row in range(1, max_scan + 1):
         row_map = {}
-        has_valid_until = False
         for col in range(1, ws.max_column + 1):
             val = ws.cell(row=row, column=col).value
             if val is not None:
                 text = str(val).strip()
-                if text == "Valid until":
-                    has_valid_until = True
                 if text in PARAM_HEADERS and text not in row_map:
                     row_map[text] = col
-        if has_valid_until:
+        if REQUIRED_PARAM_HEADERS.issubset(row_map.keys()):
             return row, row_map
     return None, {}
 
 
 def find_fy_bounds(ws_values) -> tuple[datetime.date | None, datetime.date | None]:
-    """Determine fiscal year start (Jun 1) and end (May 31) from Assumptions."""
+    """Determine fiscal year start and end from 'Fiscal year' row or old fallback."""
+    header_row, col_map = find_assumptions_header(ws_values)
+    if header_row is not None:
+        param_col = col_map["Parameter"]
+        vf_col = col_map["Valid from"]
+        vu_col = col_map["Valid until"]
+        for row in range(header_row + 1, ws_values.max_row + 1):
+            label = ws_values.cell(row=row, column=param_col).value
+            if label is not None and str(label).strip() == "Fiscal year":
+                vf = as_date(ws_values.cell(row=row, column=vf_col).value)
+                vu = as_date(ws_values.cell(row=row, column=vu_col).value)
+                if vf is not None or vu is not None:
+                    return vf, vu
+
     fy_year = None
     for row in range(1, ws_values.max_row + 1):
         label = ws_values.cell(row=row, column=1).value
@@ -333,8 +367,46 @@ def find_fy_bounds(ws_values) -> tuple[datetime.date | None, datetime.date | Non
     return datetime.date(fy_year, 6, 1), datetime.date(fy_year + 1, 5, 31)
 
 
+def find_cpi_for_date(
+    cpi_rows: list[tuple[float, datetime.date | None, datetime.date | None]],
+    target_date: datetime.date,
+) -> float | None:
+    """Return the CPI value from the CPI row whose period contains target_date."""
+    matches = [
+        (val, vf if vf is not None else datetime.date.min)
+        for val, vf, vu in cpi_rows
+        if (vf is None or vf <= target_date) and (vu is None or target_date <= vu)
+    ]
+    if not matches:
+        return None
+    best_val, unused_vf = max(matches, key=lambda item: item[1])
+    return best_val
+
+
 def find_cpi_rate(ws_values) -> float | None:
-    """Return the numeric CPI rate from the Assumptions row labeled 'CPI'."""
+    """Return the CPI valid at FY start in the new table, or old col A/B fallback."""
+    header_row, col_map = find_assumptions_header(ws_values)
+    if header_row is not None:
+        param_col = col_map["Parameter"]
+        val_col = col_map["Value"]
+        vf_col = col_map["Valid from"]
+        vu_col = col_map["Valid until"]
+        cpi_rows = []
+        for row in range(header_row + 1, ws_values.max_row + 1):
+            label = ws_values.cell(row=row, column=param_col).value
+            if label is not None and str(label).strip() == "CPI":
+                val = ws_values.cell(row=row, column=val_col).value
+                if is_number(val):
+                    vf = as_date(ws_values.cell(row=row, column=vf_col).value)
+                    vu = as_date(ws_values.cell(row=row, column=vu_col).value)
+                    cpi_rows.append((float(val), vf, vu))
+        if not cpi_rows:
+            return None
+        fy_start, unused_end = find_fy_bounds(ws_values)
+        if fy_start is not None:
+            return find_cpi_for_date(cpi_rows, fy_start)
+        return cpi_rows[0][0]
+
     for row in range(1, ws_values.max_row + 1):
         label = ws_values.cell(row=row, column=1).value
         if label is not None and str(label).strip() == "CPI":
@@ -360,8 +432,184 @@ def collect_other_sheet_formulas(wb_formulas) -> list[str]:
     return formulas
 
 
+def format_param_content(
+    value,
+    valid_from: datetime.date | None,
+    valid_until: datetime.date | None,
+) -> str:
+    """Format a parameter value together with its validity period."""
+    val_str = format_value(value)
+    if valid_from is not None and valid_until is not None:
+        return f"{val_str} ({valid_from.isoformat()} to {valid_until.isoformat()})"
+    if valid_from is not None:
+        return f"{val_str} ({valid_from.isoformat()} to open)"
+    if valid_until is not None:
+        return f"{val_str} (open to {valid_until.isoformat()})"
+    return val_str
+
+
+def parse_month_year(value) -> tuple[int, int] | None:
+    """Parse a date or 'Mon YYYY' / 'Month YYYY' text cell into (year, month)."""
+    date_val = as_date(value)
+    if date_val is not None:
+        return (date_val.year, date_val.month)
+    if not isinstance(value, str):
+        return None
+    match = MONTH_HEADER_RE.match(value)
+    if not match:
+        return None
+    month_num = MONTH_NAME_MAP.get(match.group(1).lower())
+    year = int(match.group(2))
+    if month_num is None or not (1900 <= year <= 2100):
+        return None
+    return (year, month_num)
+
+
+def format_col_ranges(cols: list[int], row: int) -> str:
+    """Collapse sorted column numbers on one row into Excel range notation."""
+    if not cols:
+        return ""
+    ranges = []
+    start = cols[0]
+    end = cols[0]
+    for col in cols[1:]:
+        if col == end + 1:
+            end = col
+        else:
+            ranges.append((start, end))
+            start = col
+            end = col
+    ranges.append((start, end))
+    parts = []
+    for s_col, e_col in ranges:
+        if s_col == e_col:
+            parts.append(f"{get_column_letter(s_col)}{row}")
+        else:
+            parts.append(f"{get_column_letter(s_col)}{row}:{get_column_letter(e_col)}{row}")
+    return ", ".join(parts)
+
+
+def check_out_of_period_usage(
+    wb_formulas,
+    wb_values,
+    param_rows: list[dict],
+    fy_start: datetime.date | None,
+) -> list[dict]:
+    """Flag dept-tab and driver-tab formulas referencing a parameter outside its dates."""
+    dated_by_row = {
+        entry["row"]: entry
+        for entry in param_rows
+        if entry["vf"] is not None or entry["vu"] is not None
+    }
+    if not dated_by_row:
+        return []
+
+    grouped: dict[tuple[str, int, int], list[tuple[int, int, int, str]]] = {}
+
+    def inspect_formula_cell(
+        sheet_name: str,
+        row: int,
+        col: int,
+        year: int,
+        month: int,
+        formula: str,
+    ) -> None:
+        cleaned = re.sub(r'"(?:[^"]|"")*"', " ", formula)
+        matched_rows = list(
+            dict.fromkeys(int(m.group(1)) for m in ASSUMPTIONS_REF_RE.finditer(cleaned))
+        )
+        if not matched_rows:
+            return
+        month_start = datetime.date(year, month, 1)
+        month_end = datetime.date(year, month, calendar.monthrange(year, month)[1])
+        for p_row in matched_rows:
+            entry = dated_by_row.get(p_row)
+            if entry is None:
+                continue
+            vf = entry["vf"]
+            vu = entry["vu"]
+            overlaps = (vf is None or vf <= month_end) and (vu is None or month_start <= vu)
+            if not overlaps:
+                grouped.setdefault((sheet_name, row, p_row), []).append(
+                    (col, year, month, formula)
+                )
+
+    for sheet_name in wb_formulas.sheetnames:
+        ws_form = wb_formulas[sheet_name]
+        ws_val = wb_values[sheet_name]
+
+        if is_dept_tab(sheet_name):
+            if fy_start is None:
+                continue
+            for row in range(4, ws_form.max_row + 1):
+                for col in range(5, 17):
+                    formula = cell_formula(ws_form.cell(row=row, column=col))
+                    if formula is None:
+                        continue
+                    total_months = (fy_start.year * 12 + (fy_start.month - 1)) + (col - 5)
+                    year = total_months // 12
+                    month = (total_months % 12) + 1
+                    inspect_formula_cell(sheet_name, row, col, year, month, formula)
+        elif sheet_name in DRIVER_TAB_SET:
+            active_col_months: dict[int, tuple[int, int]] = {}
+            for row in range(1, ws_form.max_row + 1):
+                row_col_months: dict[int, tuple[int, int]] = {}
+                for col in range(1, ws_form.max_column + 1):
+                    v_val = ws_val.cell(row=row, column=col).value
+                    parsed = parse_month_year(v_val)
+                    if parsed is None and v_val is None:
+                        parsed = parse_month_year(ws_form.cell(row=row, column=col).value)
+                    if parsed is not None:
+                        row_col_months[col] = parsed
+                if len(row_col_months) >= 3:
+                    active_col_months = row_col_months
+                    continue
+                if not active_col_months:
+                    continue
+                for col in sorted(active_col_months):
+                    formula = cell_formula(ws_form.cell(row=row, column=col))
+                    if formula is None:
+                        continue
+                    year, month = active_col_months[col]
+                    inspect_formula_cell(sheet_name, row, col, year, month, formula)
+
+    findings = []
+    for (sheet_name, row, p_row), hits in grouped.items():
+        hits.sort(key=lambda item: item[0])
+        cols = [item[0] for item in hits]
+        first_formula = hits[0][3]
+        ym_pairs = [(item[1], item[2]) for item in hits]
+        min_y, min_m = min(ym_pairs)
+        max_y, max_m = max(ym_pairs)
+        min_label = f"{MONTH_ABBRS[min_m - 1]} {min_y}"
+        max_label = f"{MONTH_ABBRS[max_m - 1]} {max_y}"
+        period_label = min_label if (min_y, min_m) == (max_y, max_m) else f"{min_label}-{max_label}"
+
+        entry = dated_by_row[p_row]
+        param_name = entry["name"]
+        vf_str = entry["vf"].isoformat() if entry["vf"] is not None else "open"
+        vu_str = entry["vu"].isoformat() if entry["vu"] is not None else "open"
+        code_val, line_name = row_context(wb_formulas[sheet_name], sheet_name, row)
+
+        findings.append(
+            make_finding(
+                check="parameters",
+                severity="high",
+                sheet=sheet_name,
+                cell=format_col_ranges(cols, row),
+                code=code_val,
+                line=line_name,
+                content=first_formula,
+                why=f"Uses {param_name} valid {vf_str} to {vu_str} for {period_label}.",
+                fix=f"Link these months to the {param_name} row that covers them.",
+            )
+        )
+
+    return findings
+
+
 def check_parameters(wb_formulas, wb_values) -> list[dict]:
-    """Run parameter source, validity, CPI, named-range, and usage checks."""
+    """Run parameter Status rules 1-9, unused-parameter, and out-of-period checks."""
     if ASSUMPTIONS not in wb_formulas.sheetnames:
         return [
             make_finding(
@@ -379,277 +627,251 @@ def check_parameters(wb_formulas, wb_values) -> list[dict]:
 
     ws_form = wb_formulas[ASSUMPTIONS]
     ws_val = wb_values[ASSUMPTIONS]
-    findings = []
-
     header_row, col_map = find_assumptions_header(ws_form)
     if header_row is None:
-        findings.append(
+        return [
             make_finding(
                 check="parameters",
-                severity="review",
+                severity="high",
                 sheet=ASSUMPTIONS,
                 cell="",
                 code=None,
                 line="",
-                content="",
+                content="Parameters table not set up yet",
                 why=(
-                    "The Assumptions tab has no source/validity columns, "
-                    "so no parameter can be traced to a contract or decision."
+                    "The Assumptions tab does not have the Parameters table headers "
+                    "(Parameter, Value, Valid from, Valid until)."
                 ),
                 fix=(
-                    "Paste in the Parameters columns (Kind, Basis, Source document, "
-                    "... Status) from the draft workbook."
+                    "Replace the Assumptions tab with the Parameters table shown on the "
+                    "FO guide's Budget Check page (or copy it from the Parameters draft)."
                 ),
             )
+        ]
+
+    fy_start, fy_end = find_fy_bounds(ws_val)
+    param_col = col_map["Parameter"]
+    val_col = col_map["Value"]
+    vf_col = col_map["Valid from"]
+    vu_col = col_map["Valid until"]
+    basis_col = col_map.get("Basis")
+    source_col = col_map.get("Source")
+    val_col_letter = get_column_letter(val_col)
+
+    param_rows = []
+    for row in range(header_row + 1, ws_val.max_row + 1):
+        param_raw = ws_val.cell(row=row, column=param_col).value
+        val_raw = ws_val.cell(row=row, column=val_col).value
+        # Rule 1: blank Value (band row) or blank Parameter name, and "Fiscal year" row.
+        if is_empty_value(param_raw) or is_empty_value(val_raw):
+            continue
+        param_name = str(param_raw).strip()
+        if param_name == "Fiscal year":
+            continue
+
+        vf = as_date(ws_val.cell(row=row, column=vf_col).value)
+        vu = as_date(ws_val.cell(row=row, column=vu_col).value)
+        basis_raw = ws_val.cell(row=row, column=basis_col).value if basis_col else None
+        source_raw = ws_val.cell(row=row, column=source_col).value if source_col else None
+        basis = str(basis_raw).strip() if basis_raw is not None else ""
+        source = str(source_raw).strip() if source_raw is not None else ""
+        is_history = vu is not None and fy_start is not None and vu < fy_start
+        param_rows.append(
+            {
+                "row": row,
+                "name": param_name,
+                "value": val_raw,
+                "vf": vf,
+                "vu": vu,
+                "basis": basis,
+                "source": source,
+                "is_history": is_history,
+            }
         )
-    else:
-        fy_start, fy_end = find_fy_bounds(ws_val)
-        cpi_rate = find_cpi_rate(ws_val)
-        missing_cpi_reported = False
 
-        for row in range(header_row + 1, ws_form.max_row + 1):
-            label_raw = ws_form.cell(row=row, column=1).value
-            b_cell = ws_form.cell(row=row, column=2)
-            b_form = b_cell.value
-            b_val = ws_val.cell(row=row, column=2).value
-            if is_empty_value(label_raw) or (is_empty_value(b_form) and is_empty_value(b_val)):
-                continue
+    rows_by_name: dict[str, list[dict]] = {}
+    for entry in param_rows:
+        rows_by_name.setdefault(entry["name"], []).append(entry)
 
-            label = str(label_raw).strip()
-            kind_col = col_map.get("Kind")
-            kind_raw = ws_val.cell(row=row, column=kind_col).value if kind_col else None
-            kind = str(kind_raw).strip() if kind_raw is not None else ""
-            if kind == "Setting":
-                continue
+    cpi_rows = [
+        (float(entry["value"]), entry["vf"], entry["vu"])
+        for entry in rows_by_name.get("CPI", [])
+        if is_number(entry["value"])
+    ]
 
-            # Source document check.
-            src_col = col_map.get("Source document")
-            src_val = ws_val.cell(row=row, column=src_col).value if src_col else None
-            if is_empty_value(src_val):
-                src_cell = f"{get_column_letter(src_col)}{row}" if src_col else f"B{row}"
-                findings.append(
-                    make_finding(
-                        check="parameters",
-                        severity="high",
-                        sheet=ASSUMPTIONS,
-                        cell=src_cell,
-                        code=None,
-                        line=label,
-                        content=format_cell(b_cell),
-                        why="No source document is listed for this parameter.",
-                        fix="Enter the contract, bylaw, statutory source, or decision in Source document.",
-                    )
+    findings = []
+    for entry in param_rows:
+        # Rule 2: History rows are never flagged.
+        if entry["is_history"]:
+            continue
+
+        row = entry["row"]
+        param_name = entry["name"]
+        val_raw = entry["value"]
+        vf = entry["vf"]
+        vu = entry["vu"]
+        basis = entry["basis"]
+        source = entry["source"]
+        siblings = rows_by_name[param_name]
+        cell_ref = f"{val_col_letter}{row}"
+        content = format_param_content(val_raw, vf, vu)
+
+        prev_entry = None
+        if vf is not None:
+            earlier = [
+                other
+                for other in siblings
+                if other["row"] != row and other["vf"] is not None and other["vf"] < vf
+            ]
+            if earlier:
+                prev_entry = max(earlier, key=lambda other: other["vf"])
+
+        # Rule 3: Source blank -> "No source" (high).
+        if is_empty_value(source):
+            findings.append(
+                make_finding(
+                    check="parameters",
+                    severity="high",
+                    sheet=ASSUMPTIONS,
+                    cell=cell_ref,
+                    code=None,
+                    line=param_name,
+                    content=content,
+                    why="No source is listed for this parameter.",
+                    fix="Enter the document and clause (contract, rate notice, or HFC decision) in Source.",
                 )
-
-            # Validity date checks against the fiscal year.
-            vf_col = col_map.get("Valid from")
-            vu_col = col_map.get("Valid until")
-            pvf_col = col_map.get("Previous valid from")
-            pvu_col = col_map.get("Previous valid until")
-            valid_from = as_date(ws_val.cell(row=row, column=vf_col).value) if vf_col else None
-            valid_until = as_date(ws_val.cell(row=row, column=vu_col).value) if vu_col else None
-            prev_valid_from = as_date(ws_val.cell(row=row, column=pvf_col).value) if pvf_col else None
-            prev_valid_until = as_date(ws_val.cell(row=row, column=pvu_col).value) if pvu_col else None
-
-            if valid_until is not None and fy_end is not None and valid_until < fy_end:
-                findings.append(
-                    make_finding(
-                        check="parameters",
-                        severity="high",
-                        sheet=ASSUMPTIONS,
-                        cell=f"{get_column_letter(vu_col)}{row}",
-                        code=None,
-                        line=label,
-                        content=valid_until.isoformat(),
-                        why=(
-                            f"Lapses before the fiscal year ends "
-                            f"({valid_until.isoformat()} vs {fy_end.isoformat()})."
-                        ),
-                        fix="Confirm the renewal rate or update Valid until to cover the full fiscal year.",
-                    )
+            )
+        # Rule 4: Lapses before FY end without a contiguous next period -> high.
+        elif (
+            vu is not None
+            and fy_end is not None
+            and vu < fy_end
+            and not any(
+                other["row"] != row and other["vf"] == vu + datetime.timedelta(days=1)
+                for other in siblings
+            )
+        ):
+            findings.append(
+                make_finding(
+                    check="parameters",
+                    severity="high",
+                    sheet=ASSUMPTIONS,
+                    cell=cell_ref,
+                    code=None,
+                    line=param_name,
+                    content=content,
+                    why=(
+                        f"Lapses before the fiscal year ends ({vu.isoformat()} vs "
+                        f"{fy_end.isoformat()}) with no following period."
+                    ),
+                    fix="Add a row for the next period starting the day after Valid until, or update Valid until.",
                 )
-
-            if valid_from is not None and fy_start is not None and valid_from > fy_start:
+            )
+        # Rule 5: Starts mid-year without a contiguous prior period -> high.
+        elif (
+            vf is not None
+            and fy_start is not None
+            and vf > fy_start
+            and not any(
+                other["row"] != row and other["vu"] == vf - datetime.timedelta(days=1)
+                for other in siblings
+            )
+        ):
+            findings.append(
+                make_finding(
+                    check="parameters",
+                    severity="high",
+                    sheet=ASSUMPTIONS,
+                    cell=cell_ref,
+                    code=None,
+                    line=param_name,
+                    content=content,
+                    why=(
+                        f"Starts mid-year ({vf.isoformat()} after {fy_start.isoformat()}) "
+                        "with no prior period covering the start of the fiscal year."
+                    ),
+                    fix="Add a prior-period row ending the day before Valid from, or update Valid from.",
+                )
+            )
+        # Rule 6 & Rule 8: Basis "CPI" checks against CPI-inflated previous period.
+        elif basis == "CPI":
+            if prev_entry is None:
                 findings.append(
                     make_finding(
                         check="parameters",
                         severity="review",
                         sheet=ASSUMPTIONS,
-                        cell=f"{get_column_letter(vf_col)}{row}",
+                        cell=cell_ref,
                         code=None,
-                        line=label,
-                        content=valid_from.isoformat(),
-                        why=(
-                            f"Starts mid-year ({valid_from.isoformat()}); "
-                            "the budget line may need two rates."
-                        ),
-                        fix="Verify that months before the start date use the prior rate and months after use this rate.",
+                        line=param_name,
+                        content=content,
+                        why="Basis is CPI, but no earlier period exists to check the inflation adjustment.",
+                        fix="Add the prior-period row with the same Parameter name, or change Basis.",
                     )
                 )
-
-            if (
-                prev_valid_until is not None
-                and valid_from is not None
-                and prev_valid_until != valid_from - datetime.timedelta(days=1)
-            ):
-                findings.append(
-                    make_finding(
-                        check="parameters",
-                        severity="review",
-                        sheet=ASSUMPTIONS,
-                        cell=f"{get_column_letter(pvu_col)}{row}",
-                        code=None,
-                        line=label,
-                        content=prev_valid_until.isoformat(),
-                        why=(
-                            f"Gap or overlap with the previous period "
-                            f"({prev_valid_until.isoformat()} before {valid_from.isoformat()})."
-                        ),
-                        fix="Check the contract dates so the new period begins the day after the previous period ends.",
-                    )
-                )
-
-            # CPI escalator verification when Basis == "CPI".
-            basis_col = col_map.get("Basis")
-            basis_raw = ws_val.cell(row=row, column=basis_col).value if basis_col else None
-            basis = str(basis_raw).strip() if basis_raw is not None else ""
-            if basis == "CPI":
-                if cpi_rate is None:
-                    if not missing_cpi_reported:
-                        missing_cpi_reported = True
-                        findings.append(
-                            make_finding(
-                                check="parameters",
-                                severity="review",
-                                sheet=ASSUMPTIONS,
-                                cell="",
-                                code=None,
-                                line="CPI",
-                                content="",
-                                why="CPI rate was not found on the Assumptions tab, so CPI-indexed rows were not verified.",
-                                fix="Ensure a row labeled 'CPI' with a numeric value in column B exists on Assumptions.",
-                            )
-                        )
-                    continue
-
-                prev_col = col_map.get("Previous value")
-                prev_val = ws_val.cell(row=row, column=prev_col).value if prev_col else None
-                if is_empty_value(prev_val):
-                    prev_cell = f"{get_column_letter(prev_col)}{row}" if prev_col else f"B{row}"
-                    findings.append(
-                        make_finding(
-                            check="parameters",
-                            severity="review",
-                            sheet=ASSUMPTIONS,
-                            cell=prev_cell,
-                            code=None,
-                            line=label,
-                            content="",
-                            why="Cannot verify inflation (no previous value).",
-                            fix="Enter the prior-period value in Previous value so the CPI adjustment can be checked.",
-                        )
-                    )
-                elif (
-                    is_number(prev_val)
-                    and is_number(b_val)
-                    and valid_from is not None
-                    and prev_valid_from is not None
-                ):
-                    years = round((valid_from - prev_valid_from).days / 365.25)
-                    expected = float(prev_val) * ((1.0 + cpi_rate) ** years)
+            elif is_number(prev_entry["value"]) and is_number(val_raw):
+                cpi_rate = find_cpi_for_date(cpi_rows, vf)
+                if cpi_rate is not None:
+                    years = round((vf - prev_entry["vf"]).days / 365.25)
+                    expected = float(prev_entry["value"]) * ((1.0 + cpi_rate) ** years)
                     if expected == 0:
-                        mismatch = abs(float(b_val)) > CPI_TOLERANCE
+                        mismatch = abs(float(val_raw)) > CPI_TOLERANCE
                     else:
-                        mismatch = abs(float(b_val) / expected - 1.0) > CPI_TOLERANCE
+                        mismatch = abs(float(val_raw) / expected - 1.0) > CPI_TOLERANCE
                     if mismatch:
+                        expected_str = (
+                            f"{expected:,.2f}" if abs(expected) >= 1 else f"{expected:.4g}"
+                        )
                         findings.append(
                             make_finding(
                                 check="parameters",
                                 severity="high",
                                 sheet=ASSUMPTIONS,
-                                cell=f"B{row}",
+                                cell=cell_ref,
                                 code=None,
-                                line=label,
-                                content=format_value(b_val),
+                                line=param_name,
+                                content=content,
                                 why=(
-                                    f"Value does not equal the previous value inflated by CPI "
-                                    f"(expected {expected:,.2f})."
+                                    "Differs from the CPI-inflated previous value "
+                                    f"(expected {expected_str})."
                                 ),
-                                fix="Update the value to the CPI-adjusted amount or change Basis if another escalator applies.",
+                                fix="Update Value to the CPI-inflated amount or change Basis if another rule applies.",
                             )
                         )
-
-    # Named range claims and unused parameter checks always run (grouped once each).
-    defined_upper = {name.upper() for name in wb_formulas.defined_names.keys()}
-    claimed_names = {}
-    missing_named_ranges = []
-    for row in range(1, ws_form.max_row + 1):
-        c_val = ws_form.cell(row=row, column=3).value
-        if c_val is None:
-            continue
-        c_text = str(c_val)
-        match = re.search(r"Named range:\s*([A-Z_][A-Z0-9_]*)", c_text)
-        if match:
-            claimed = match.group(1)
-            claimed_names[row] = claimed
-            if claimed.upper() not in defined_upper:
-                missing_named_ranges.append((row, claimed))
-
-    if missing_named_ranges:
-        summary_names = ", ".join(f"{name} (C{r})" for r, name in missing_named_ranges)
-        findings.append(
-            make_finding(
-                check="parameters",
-                severity="review",
-                sheet=ASSUMPTIONS,
-                cell="",
-                code=None,
-                line="",
-                content="",
-                why=(
-                    "Column C claims named ranges that do not exist, so formulas "
-                    f"cannot use them: {summary_names}."
-                ),
-                fix="Create these names (Formulas > Name Manager) pointing at column B, or delete the notes in column C.",
+        # Rule 7: Basis "Estimate" -> review.
+        elif basis == "Estimate":
+            findings.append(
+                make_finding(
+                    check="parameters",
+                    severity="review",
+                    sheet=ASSUMPTIONS,
+                    cell=cell_ref,
+                    code=None,
+                    line=param_name,
+                    content=content,
+                    why="Basis is Estimate; this value needs confirmation.",
+                    fix="Confirm the final rate or quote and update Basis and Source.",
+                )
             )
-        )
 
+    # Unused active parameters (skip band rows, Fiscal year, and History rows).
     other_formulas = collect_other_sheet_formulas(wb_formulas)
-    kind_col = col_map.get("Kind")
     unused_params = []
-    for row in range(4, ws_form.max_row + 1):
-        a_val = ws_form.cell(row=row, column=1).value
-        b_cell = ws_form.cell(row=row, column=2)
-        if is_empty_value(a_val):
+    for entry in param_rows:
+        if entry["is_history"]:
             continue
-        if not (is_number(b_cell.value) or cell_formula(b_cell) is not None):
-            continue
-        if kind_col is not None:
-            kind_raw = ws_val.cell(row=row, column=kind_col).value
-            if kind_raw is not None and str(kind_raw).strip() == "Setting":
-                continue
-
+        row = entry["row"]
         cell_ref_re = re.compile(
-            rf"'?{re.escape(ASSUMPTIONS)}'?!\$?B\$?{row}(?!\d)",
+            rf"'?{re.escape(ASSUMPTIONS)}'?!\$?{re.escape(val_col_letter)}\$?{row}(?!\d)",
             flags=re.IGNORECASE,
         )
-        claimed = claimed_names.get(row)
-        name_re = (
-            re.compile(rf"\b{re.escape(claimed)}\b", flags=re.IGNORECASE)
-            if claimed
-            else None
-        )
-
-        used = any(
-            cell_ref_re.search(formula) is not None
-            or (name_re is not None and name_re.search(formula) is not None)
-            for formula in other_formulas
-        )
-        if not used:
-            unused_params.append((row, str(a_val).strip()))
+        if not any(cell_ref_re.search(formula) is not None for formula in other_formulas):
+            unused_params.append((row, entry["name"]))
 
     if unused_params:
-        summary_unused = ", ".join(f"{label} (B{r})" for r, label in unused_params)
+        summary_unused = ", ".join(
+            f"{label} ({val_col_letter}{r})" for r, label in unused_params
+        )
         findings.append(
             make_finding(
                 check="parameters",
@@ -664,6 +886,7 @@ def check_parameters(wb_formulas, wb_values) -> list[dict]:
             )
         )
 
+    findings.extend(check_out_of_period_usage(wb_formulas, wb_values, param_rows, fy_start))
     return findings
 
 
@@ -754,9 +977,23 @@ def collect_assumption_parameters(wb_values) -> list[tuple[int, str, float]]:
     if ASSUMPTIONS not in wb_values.sheetnames:
         return []
     ws_val = wb_values[ASSUMPTIONS]
+    header_row, col_map = find_assumptions_header(ws_val)
+    if header_row is not None:
+        param_col = col_map["Parameter"]
+        val_col = col_map["Value"]
+        vu_col = col_map["Valid until"]
+        fy_start, unused_end = find_fy_bounds(ws_val)
+        start_row = header_row + 1
+    else:
+        param_col = 1
+        val_col = 2
+        vu_col = None
+        fy_start = None
+        start_row = 4
+
     params = []
-    for row in range(4, ws_val.max_row + 1):
-        val = ws_val.cell(row=row, column=2).value
+    for row in range(start_row, ws_val.max_row + 1):
+        val = ws_val.cell(row=row, column=val_col).value
         if not is_number(val):
             continue
         if abs(val) < 50:
@@ -764,7 +1001,11 @@ def collect_assumption_parameters(wb_values) -> list[tuple[int, str, float]]:
         int_val = as_int(val)
         if int_val is not None and 1900 <= int_val <= 2100:
             continue
-        label = str(ws_val.cell(row=row, column=1).value or "").strip()
+        if vu_col is not None and fy_start is not None:
+            vu = as_date(ws_val.cell(row=row, column=vu_col).value)
+            if vu is not None and vu < fy_start:
+                continue
+        label = str(ws_val.cell(row=row, column=param_col).value or "").strip()
         params.append((row, label, float(val)))
     return params
 
@@ -1045,7 +1286,13 @@ def check_hard_coded(wb_formulas, wb_values) -> list[dict]:
     return findings
 
 
-# (3.4): Rule 4 - Internal consistency (sums, COA codes, text dashes, Consolidated tie-out).
+# (3.4): Rule 4 - Internal consistency (sums, COA codes, text dashes, Consolidated tie-out, external links).
+EXTERNAL_REF_RE = re.compile(
+    r"\[(?:\d+|[^\]]+\.(?:xlsx|xlsm|xls))\][^\[\]!]+!",
+    flags=re.IGNORECASE,
+)
+
+
 def collect_coa_codes(wb_formulas, wb_values) -> set[int] | None:
     """Collect every integer 1000..9999 on the COA sheet, or None if sheet is missing."""
     if COA_SHEET not in wb_formulas.sheetnames:
@@ -1082,9 +1329,67 @@ def has_missing_cached_values(wb_formulas, wb_values) -> bool:
     return has_formula and all_none
 
 
+def check_external_links(wb_formulas) -> list[dict]:
+    """Flag workbook-level external links and formula cells referencing other workbooks."""
+    findings = []
+    ext_links = getattr(wb_formulas, "_external_links", None)
+    if ext_links:
+        findings.append(
+            make_finding(
+                check="consistency",
+                severity="high",
+                sheet="(workbook)",
+                cell="",
+                code=None,
+                line="",
+                content=f"{len(ext_links)} external link(s)",
+                why="The workbook links to another file; the budget must not depend on another file.",
+                fix="Replace external links with values or move the data into this workbook.",
+            )
+        )
+
+    for sheet_name in wb_formulas.sheetnames:
+        ws = wb_formulas[sheet_name]
+        matches = []
+        for row in range(1, ws.max_row + 1):
+            for col in range(1, ws.max_column + 1):
+                formula = cell_formula(ws.cell(row=row, column=col))
+                if formula is None:
+                    continue
+                cleaned = re.sub(r'"(?:[^"]|"")*"', " ", formula)
+                if EXTERNAL_REF_RE.search(cleaned) is not None:
+                    coord = f"{get_column_letter(col)}{row}"
+                    code_val, line_name = row_context(ws, sheet_name, row)
+                    matches.append((coord, formula, code_val, line_name))
+        if matches:
+            shown = [coord for coord, unused_f, unused_c, unused_l in matches[:5]]
+            extra = len(matches) - len(shown)
+            cell_list = ", ".join(shown)
+            summary = f"{cell_list} (+{extra} more)" if extra > 0 else cell_list
+            first_coord, first_formula, first_code, first_line = matches[0]
+            findings.append(
+                make_finding(
+                    check="consistency",
+                    severity="high",
+                    sheet=sheet_name,
+                    cell=cell_list,
+                    code=first_code if len(matches) == 1 else None,
+                    line=first_line if len(matches) == 1 else "",
+                    content=first_formula,
+                    why=(
+                        f"Formula(s) in {summary} reference another workbook; "
+                        "the budget must not depend on another file."
+                    ),
+                    fix="Replace with values or move the data into this workbook.",
+                )
+            )
+    return findings
+
+
 def check_consistency(wb_formulas, wb_values) -> list[dict]:
     """Run internal consistency checks across department tabs and Consolidated."""
     findings = []
+    findings.extend(check_external_links(wb_formulas))
     cached_missing = has_missing_cached_values(wb_formulas, wb_values)
     if cached_missing:
         findings.append(
@@ -1364,7 +1669,11 @@ def finding_sort_key(
     severity_rank = 0 if finding["severity"] == "high" else 1
     sheet_rank = sheet_order.get(finding["sheet"], len(sheet_order))
     if finding["cell"]:
-        row, col = coordinate_to_tuple(finding["cell"])
+        coord_match = re.match(r"\$?([A-Za-z]{1,3})\$?(\d+)", finding["cell"].strip())
+        if coord_match:
+            row, col = coordinate_to_tuple(f"{coord_match.group(1)}{coord_match.group(2)}")
+        else:
+            row, col = (0, 0)
     else:
         row, col = (0, 0)
     check_rank = CHECK_ORDER.index(finding["check"])
@@ -1416,11 +1725,14 @@ def section_explainer(check_name: str, driver_tabs: list[str]) -> str:
     """Return a plain-English 2-3 sentence explainer for each check section."""
     if check_name == "parameters":
         return (
-            "This section checks whether rates, contracts, and assumptions on the "
-            "Assumptions tab have a documented source, cover the full fiscal year, and "
-            "match CPI inflation where applicable. It also flags claimed named ranges that "
-            "do not exist yet and parameters not referenced by any budget formula. "
-            "Review each item to confirm sources, dates, and links are complete."
+            "This section checks the Parameters table on the Assumptions tab, where "
+            "each parameter has one row per validity period. High-severity statuses "
+            "flag missing sources (No source), periods that end before FY end or start "
+            "mid-year without an adjacent row (Lapses before FY end, Starts mid-year), "
+            "and CPI-indexed values that diverge from the CPI-inflated previous period; "
+            "review statuses flag unconfirmed Estimates, CPI rows without a prior "
+            "period, and unused active parameters (History rows are ignored). It also "
+            "flags budget or driver formulas linking to a parameter outside its valid dates."
         )
     if check_name == "rolled_forward":
         driver_list = ", ".join(driver_tabs) if driver_tabs else "none present"
@@ -1444,8 +1756,9 @@ def section_explainer(check_name: str, driver_tabs: list[str]) -> str:
             "This section checks internal arithmetic and coding integrity: whether "
             "Annual Budget equals the sum of the 12 months, whether Annual Target matches "
             "Annual Budget, whether department totals tie out to Consolidated, whether "
-            "account codes appear in the Chart of Accounts, and whether text dashes sit in "
-            "numeric cells. Fix high-severity mismatches before finalizing the budget."
+            "account codes appear in the Chart of Accounts, whether text dashes sit in "
+            "numeric cells, and whether the workbook links to other workbooks. Fix "
+            "high-severity mismatches before finalizing the budget."
         )
     return (
         "This section verifies that mandatory annual organizational expenses (such as "
