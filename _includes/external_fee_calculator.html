@@ -1,0 +1,11 @@
+<div class="eft-calc-embed">
+<link rel="stylesheet" href="{{ '/assets/external-fund-transfer-fee-calculator/calculator-widget.css' | relative_url }}">
+<div class="eft-calc" data-eft-calculator></div>
+<script src="{{ '/assets/external-fund-transfer-fee-calculator/vendor/jspdf.umd.min.js' | relative_url }}"></script>
+<script type="module">
+  import { mountFeeCalculator } from "{{ '/assets/external-fund-transfer-fee-calculator/calculator-widget.mjs' | relative_url }}";
+  mountFeeCalculator(document.querySelector("[data-eft-calculator]"), {
+    logoUrl: "{{ '/assets/external-fund-transfer-fee-calculator/gss-logo-teal.jpg' | relative_url }}"
+  });
+</script>
+</div>
