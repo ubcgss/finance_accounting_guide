@@ -51,6 +51,57 @@ def populate_workbook(sheets: dict[str, dict[str, object]], target_path: Path) -
     wb.close()
 
 
+def build_assumptions_sheet(
+    rows: list[tuple[str, object, datetime.date | None, datetime.date | None, str, str]],
+    fy_start: datetime.date = datetime.date(2026, 6, 1),
+    fy_end: datetime.date = datetime.date(2027, 5, 31),
+    cpi: float | None = 0.022,
+) -> dict[str, object]:
+    """Build a new-layout Assumptions sheet with headers in A3:I3 and Fiscal year in row 4."""
+    cells: dict[str, object] = {
+        "A1": "PARAMETERS - FY 2026-27",
+        "A2": "Rows needing attention:",
+        "B2": '=COUNTIFS(C4:C100,"<>",C4:C100,"<>OK",C4:C100,"<>History")',
+        "A3": "Parameter",
+        "B3": "Value",
+        "C3": "Status",
+        "D3": "Valid from",
+        "E3": "Valid until",
+        "F3": "Basis",
+        "G3": "Source",
+        "H3": "CPI-inflated previous",
+        "I3": "Notes",
+        "A4": "Fiscal year",
+        "B4": "2026-27",
+        "D4": fy_start,
+        "E4": fy_end,
+    }
+    next_row = 5
+    if cpi is not None:
+        cells[f"A{next_row}"] = "CPI"
+        cells[f"B{next_row}"] = cpi
+        cells[f"D{next_row}"] = fy_start
+        cells[f"E{next_row}"] = fy_end
+        cells[f"F{next_row}"] = "Published rate"
+        cells[f"G{next_row}"] = "StatsCan"
+        next_row += 1
+
+    for offset, (param, val, vf, vu, basis, source) in enumerate(rows):
+        row = next_row + offset
+        cells[f"A{row}"] = param
+        if val is not None:
+            cells[f"B{row}"] = val
+        if vf is not None:
+            cells[f"D{row}"] = vf
+        if vu is not None:
+            cells[f"E{row}"] = vu
+        if basis:
+            cells[f"F{row}"] = basis
+        if source:
+            cells[f"G{row}"] = source
+    return cells
+
+
 @contextmanager
 def make_workbook(
     sheets: dict[str, dict[str, object]],
@@ -417,35 +468,39 @@ class BudgetChecksTests(unittest.TestCase):
         self.assertEqual(d36_findings[0]["severity"], "high")
         self.assertIn("1.02", d36_findings[0]["why"])
 
-    # (2.5): Parameters check when Assumptions metadata columns are absent.
-    def test_parameters_missing_headers_and_named_ranges(self) -> None:
-        sheets = {
+    # (2.5): Old Assumptions layouts return a single "not set up" high finding.
+    def test_parameters_old_layout_not_set_up(self) -> None:
+        old_headerless = {
             "Assumptions": {
                 "A5": "Fiscal Year Label",
                 "B5": "2026-27",
-                "C5": "Named range: FY_LABEL",
+                "A6": "Budget FY Start Year",
+                "B6": 2026,
                 "A30": "CPI",
                 "B30": 0.022,
                 "C30": "Named range: CPI_RATE",
             },
-            "10-CORP": {
-                "D7": "=S7*(1+Assumptions!$B$30)",
-            },
+            "10-CORP": {"D7": "=S7*(1+Assumptions!$B$30)"},
         }
-        with make_workbook(sheets) as (wb_form, wb_val, unused_path):
+        with make_workbook(old_headerless) as (wb_form, wb_val, unused_path):
             findings = budget_checks.check_parameters(wb_form, wb_val)
+            self.assertEqual(
+                budget_checks.find_fy_bounds(wb_val[budget_checks.ASSUMPTIONS]),
+                (datetime.date(2026, 6, 1), datetime.date(2027, 5, 31)),
+            )
+            self.assertEqual(
+                budget_checks.find_cpi_rate(wb_val[budget_checks.ASSUMPTIONS]),
+                0.022,
+            )
 
-        self.assertEqual(len(findings), 2)
-        missing_hdr = [item for item in findings if "no source/validity columns" in item["why"]][0]
-        missing_names = [item for item in findings if "named ranges" in item["why"]][0]
-        self.assertEqual(missing_hdr["severity"], "review")
-        self.assertEqual(missing_names["severity"], "review")
-        self.assertIn("FY_LABEL (C5)", missing_names["why"])
-        self.assertIn("CPI_RATE (C30)", missing_names["why"])
+        self.assertEqual(len(findings), 1)
+        self.assertEqual(findings[0]["check"], "parameters")
+        self.assertEqual(findings[0]["severity"], "high")
+        self.assertEqual(findings[0]["sheet"], "Assumptions")
+        self.assertEqual(findings[0]["content"], "Parameters table not set up yet")
+        self.assertIn("Budget Check", findings[0]["fix"])
 
-    # (2.5b): Unused parameters are grouped once and exclude Kind == Setting.
-    def test_parameters_unused_grouped_and_skips_setting(self) -> None:
-        sheets = {
+        old_draft_headers = {
             "Assumptions": {
                 "D3": "Kind",
                 "E3": "Basis",
@@ -453,113 +508,190 @@ class BudgetChecksTests(unittest.TestCase):
                 "I3": "Valid until",
                 "A6": "Budget FY Start Year",
                 "B6": 2026,
-                "D6": "Setting",
-                "A17": "RRSP Match",
-                "B17": 0.04,
-                "D17": "Rate",
-                "F17": "Policy",
-                "A19": "WL Wage Rate",
-                "B19": 26.02,
-                "D19": "Rate",
-                "F19": "UBC",
             }
+        }
+        with make_workbook(old_draft_headers) as (wb_form, wb_val, unused_path):
+            draft_findings = budget_checks.check_parameters(wb_form, wb_val)
+
+        self.assertEqual(len(draft_findings), 1)
+        self.assertEqual(draft_findings[0]["severity"], "high")
+        self.assertEqual(draft_findings[0]["content"], "Parameters table not set up yet")
+
+    # (2.5b): History rows, band rows, and Fiscal year are never flagged or marked unused.
+    def test_parameters_history_and_band_rows_ignored(self) -> None:
+        assumptions = build_assumptions_sheet(
+            [
+                ("SECTION BAND", None, None, None, "", ""),
+                (
+                    "Old Lease",
+                    4000,
+                    datetime.date(2025, 6, 1),
+                    datetime.date(2026, 5, 31),
+                    "Estimate",
+                    "",
+                ),
+            ]
+        )
+        sheets = {
+            "Assumptions": assumptions,
+            "Driver": {"A1": "=Assumptions!$B$5"},
         }
         with make_workbook(sheets) as (wb_form, wb_val, unused_path):
             findings = budget_checks.check_parameters(wb_form, wb_val)
 
-        unused_findings = [item for item in findings if "No budget formula" in item["why"]]
-        self.assertEqual(len(unused_findings), 1)
-        self.assertIn("RRSP Match (B17)", unused_findings[0]["why"])
-        self.assertIn("WL Wage Rate (B19)", unused_findings[0]["why"])
-        self.assertNotIn("Budget FY Start Year", unused_findings[0]["why"])
+        self.assertEqual(findings, [])
 
-    # (2.6): Parameters check with metadata headers, dates, Setting skip, and CPI.
-    def test_parameters_with_headers_and_cpi(self) -> None:
-        assumptions = {
-            "D3": "Kind",
-            "E3": "Basis",
-            "F3": "Source document",
-            "G3": "Clause",
-            "H3": "Valid from",
-            "I3": "Valid until",
-            "J3": "Previous value",
-            "K3": "Previous valid from",
-            "L3": "Previous valid until",
-            "M3": "Inflated previous",
-            "N3": "Owner",
-            "O3": "Status",
-            "A6": "Budget FY Start Year",
-            "B6": 2026,
-            "D6": "Setting",
-            "A30": "CPI",
-            "B30": 0.022,
-            "D30": "Setting",
-            # Row 41: missing source document -> high.
-            "A41": "No Source Rate",
-            "B41": 100,
-            "D41": "Rate",
-            "E41": "Fixed",
-            "H41": datetime.date(2026, 6, 1),
-            "I41": datetime.date(2027, 5, 31),
-            # Row 42: lapses before FY end -> high.
-            "A42": "Lapsing Contract",
-            "B42": 200,
-            "D42": "Contract",
-            "E42": "Fixed",
-            "F42": "Lease",
-            "H42": datetime.date(2026, 6, 1),
-            "I42": datetime.date(2027, 3, 31),
-            # Row 43: starts mid-year -> review (no gap with previous).
-            "A43": "Midyear Rate",
-            "B43": 300,
-            "D43": "Contract",
-            "E43": "Fixed",
-            "F43": "Union",
-            "H43": datetime.date(2026, 9, 1),
-            "I43": datetime.date(2027, 5, 31),
-            "K43": datetime.date(2025, 6, 1),
-            "L43": datetime.date(2026, 8, 31),
-            # Row 44: gap before Valid from -> review.
-            "A44": "Gapped Contract",
-            "B44": 400,
-            "D44": "Contract",
-            "E44": "Fixed",
-            "F44": "Vendor",
-            "H44": datetime.date(2026, 6, 1),
-            "I44": datetime.date(2027, 5, 31),
-            "L44": datetime.date(2026, 5, 15),
-            # Row 45: CPI mismatch (105 vs expected 102.2) -> high.
-            "A45": "CPI Bad",
-            "B45": 105,
-            "D45": "Contract",
-            "E45": "CPI",
-            "F45": "SLA",
-            "H45": datetime.date(2026, 6, 1),
-            "I45": datetime.date(2027, 5, 31),
-            "J45": 100,
-            "K45": datetime.date(2025, 6, 1),
-            "L45": datetime.date(2026, 5, 31),
-            # Row 46: CPI match (102.2) -> no CPI finding.
-            "A46": "CPI Good",
-            "B46": 102.2,
-            "D46": "Contract",
-            "E46": "CPI",
-            "F46": "SLA 2",
-            "H46": datetime.date(2026, 6, 1),
-            "I46": datetime.date(2027, 5, 31),
-            "J46": 100,
-            "K46": datetime.date(2025, 6, 1),
-            "L46": datetime.date(2026, 5, 31),
-            # Row 47: Setting row with missing source and early date -> skipped.
-            "A47": "Ignored Setting",
-            "B47": 999,
-            "D47": "Setting",
-            "I47": datetime.date(2026, 12, 31),
+    # (2.5c): Split-period same-name rows satisfy lapsing/mid-year; single partial row flags.
+    def test_parameters_split_periods_and_lapsing_or_midyear(self) -> None:
+        two_periods = build_assumptions_sheet(
+            [
+                (
+                    "CPP rate",
+                    0.0595,
+                    datetime.date(2026, 1, 1),
+                    datetime.date(2026, 12, 31),
+                    "Published rate",
+                    "CRA T4127",
+                ),
+                (
+                    "CPP rate",
+                    0.0610,
+                    datetime.date(2027, 1, 1),
+                    datetime.date(2027, 12, 31),
+                    "Published rate",
+                    "CRA T4127",
+                ),
+            ]
+        )
+        sheets = {
+            "Assumptions": two_periods,
+            "Driver": {"A1": "=Assumptions!$B$5+Assumptions!$B$6+Assumptions!$B$7"},
         }
-        # Reference every Assumptions parameter on another sheet to isolate metadata checks.
+        with make_workbook(sheets) as (wb_form, wb_val, unused_path):
+            findings = budget_checks.check_parameters(wb_form, wb_val)
+        self.assertEqual(findings, [])
+
+        # Removing the 2027 row causes the 2026 row to lapse before FY end (2027-05-31).
+        lapsing_only = build_assumptions_sheet(
+            [
+                (
+                    "CPP rate",
+                    0.0595,
+                    datetime.date(2026, 1, 1),
+                    datetime.date(2026, 12, 31),
+                    "Published rate",
+                    "CRA T4127",
+                ),
+            ]
+        )
+        sheets_lapsing = {
+            "Assumptions": lapsing_only,
+            "Driver": {"A1": "=Assumptions!$B$5+Assumptions!$B$6"},
+        }
+        with make_workbook(sheets_lapsing) as (wb_form, wb_val, unused_path):
+            lapsing_findings = budget_checks.check_parameters(wb_form, wb_val)
+
+        self.assertEqual(len(lapsing_findings), 1)
+        self.assertEqual(lapsing_findings[0]["severity"], "high")
+        self.assertEqual(lapsing_findings[0]["cell"], "B6")
+        self.assertEqual(lapsing_findings[0]["line"], "CPP rate")
+        self.assertEqual(lapsing_findings[0]["content"], "0.0595 (2026-01-01 to 2026-12-31)")
+        self.assertIn("Lapses before the fiscal year ends", lapsing_findings[0]["why"])
+
+        # Keeping only the 2027 row triggers Starts mid-year.
+        midyear_only = build_assumptions_sheet(
+            [
+                (
+                    "CPP rate",
+                    0.0610,
+                    datetime.date(2027, 1, 1),
+                    datetime.date(2027, 12, 31),
+                    "Published rate",
+                    "CRA T4127",
+                ),
+            ]
+        )
+        sheets_midyear = {
+            "Assumptions": midyear_only,
+            "Driver": {"A1": "=Assumptions!$B$5+Assumptions!$B$6"},
+        }
+        with make_workbook(sheets_midyear) as (wb_form, wb_val, unused_path):
+            midyear_findings = budget_checks.check_parameters(wb_form, wb_val)
+
+        self.assertEqual(len(midyear_findings), 1)
+        self.assertEqual(midyear_findings[0]["severity"], "high")
+        self.assertIn("Starts mid-year", midyear_findings[0]["why"])
+
+    # (2.6): Status rules for No source, Estimate, and CPI (match, mismatch, no previous).
+    def test_parameters_status_rules_source_estimate_cpi(self) -> None:
+        assumptions = build_assumptions_sheet(
+            [
+                # Row 6: CPI match (prev 100 from 2025-06-01, curr 102.20 from 2026-06-01).
+                (
+                    "CPI Good",
+                    100.00,
+                    datetime.date(2025, 6, 1),
+                    datetime.date(2026, 5, 31),
+                    "Contract",
+                    "SLA s.4",
+                ),
+                (
+                    "CPI Good",
+                    102.20,
+                    datetime.date(2026, 6, 1),
+                    datetime.date(2027, 5, 31),
+                    "CPI",
+                    "SLA s.4",
+                ),
+                # Row 8-9: CPI mismatch (110 vs 102.20) -> high.
+                (
+                    "CPI Bad",
+                    100.00,
+                    datetime.date(2025, 6, 1),
+                    datetime.date(2026, 5, 31),
+                    "Contract",
+                    "SLA s.5",
+                ),
+                (
+                    "CPI Bad",
+                    110.00,
+                    datetime.date(2026, 6, 1),
+                    datetime.date(2027, 5, 31),
+                    "CPI",
+                    "SLA s.5",
+                ),
+                # Row 10: CPI with no previous period -> review.
+                (
+                    "CPI No Prev",
+                    250.00,
+                    datetime.date(2026, 6, 1),
+                    datetime.date(2027, 5, 31),
+                    "CPI",
+                    "Vendor quote",
+                ),
+                # Row 11: Basis Estimate -> review.
+                (
+                    "Audit Estimate",
+                    18000,
+                    datetime.date(2026, 6, 1),
+                    datetime.date(2027, 5, 31),
+                    "Estimate",
+                    "Prior invoice",
+                ),
+                # Row 12: No source (even with Estimate basis, rule 3 wins) -> high.
+                (
+                    "Missing Source",
+                    500,
+                    datetime.date(2026, 6, 1),
+                    datetime.date(2027, 5, 31),
+                    "Estimate",
+                    "",
+                ),
+            ]
+        )
         usage_formula = (
-            "=Assumptions!B6+Assumptions!B30+Assumptions!B41+Assumptions!B42"
-            "+Assumptions!B43+Assumptions!B44+Assumptions!B45+Assumptions!B46+Assumptions!B47"
+            "=Assumptions!B5+Assumptions!B7+Assumptions!B9"
+            "+Assumptions!B10+Assumptions!B11+Assumptions!B12"
         )
         sheets = {
             "Assumptions": assumptions,
@@ -567,17 +699,152 @@ class BudgetChecksTests(unittest.TestCase):
         }
         with make_workbook(sheets) as (wb_form, wb_val, unused_path):
             findings = budget_checks.check_parameters(wb_form, wb_val)
+            self.assertEqual(
+                budget_checks.find_fy_bounds(wb_val[budget_checks.ASSUMPTIONS]),
+                (datetime.date(2026, 6, 1), datetime.date(2027, 5, 31)),
+            )
+            self.assertEqual(
+                budget_checks.find_cpi_rate(wb_val[budget_checks.ASSUMPTIONS]),
+                0.022,
+            )
 
         by_line = {item["line"]: item for item in findings}
-        self.assertEqual(len(findings), 5)
-        self.assertEqual(by_line["No Source Rate"]["severity"], "high")
-        self.assertEqual(by_line["Lapsing Contract"]["severity"], "high")
-        self.assertEqual(by_line["Midyear Rate"]["severity"], "review")
-        self.assertEqual(by_line["Gapped Contract"]["severity"], "review")
+        self.assertEqual(set(by_line.keys()), {"CPI Bad", "CPI No Prev", "Audit Estimate", "Missing Source"})
         self.assertEqual(by_line["CPI Bad"]["severity"], "high")
+        self.assertEqual(by_line["CPI Bad"]["cell"], "B9")
         self.assertIn("102.20", by_line["CPI Bad"]["why"])
-        self.assertNotIn("CPI Good", by_line)
-        self.assertNotIn("Ignored Setting", by_line)
+        self.assertEqual(by_line["CPI No Prev"]["severity"], "review")
+        self.assertEqual(by_line["CPI No Prev"]["cell"], "B10")
+        self.assertEqual(by_line["Audit Estimate"]["severity"], "review")
+        self.assertEqual(by_line["Audit Estimate"]["cell"], "B11")
+        self.assertEqual(by_line["Missing Source"]["severity"], "high")
+        self.assertEqual(by_line["Missing Source"]["cell"], "B12")
+        self.assertIn("No source", by_line["Missing Source"]["why"])
+
+    # (2.6b): Unused active parameters are grouped once; Fiscal year, bands, and History skipped.
+    def test_parameters_unused_grouped(self) -> None:
+        assumptions = build_assumptions_sheet(
+            [
+                ("BENEFITS", None, None, None, "", ""),
+                (
+                    "Old Benefit",
+                    0.03,
+                    datetime.date(2025, 6, 1),
+                    datetime.date(2026, 5, 31),
+                    "Policy",
+                    "Handbook",
+                ),
+                (
+                    "RRSP Match",
+                    0.04,
+                    datetime.date(2026, 6, 1),
+                    datetime.date(2027, 5, 31),
+                    "HFC decision",
+                    "HFC Minutes",
+                ),
+                (
+                    "WL Wage Rate",
+                    26.02,
+                    datetime.date(2026, 6, 1),
+                    datetime.date(2027, 5, 31),
+                    "Published rate",
+                    "UBC WorkLearn",
+                ),
+            ]
+        )
+        sheets = {
+            "Assumptions": assumptions,
+            "Driver": {"A1": "=Assumptions!$B$5"},
+        }
+        with make_workbook(sheets) as (wb_form, wb_val, unused_path):
+            findings = budget_checks.check_parameters(wb_form, wb_val)
+
+        self.assertEqual(len(findings), 1)
+        self.assertEqual(findings[0]["severity"], "review")
+        self.assertIn("RRSP Match (B8)", findings[0]["why"])
+        self.assertIn("WL Wage Rate (B9)", findings[0]["why"])
+        self.assertNotIn("Fiscal year", findings[0]["why"])
+        self.assertNotIn("BENEFITS", findings[0]["why"])
+        self.assertNotIn("Old Benefit", findings[0]["why"])
+
+    # (2.6c): Out-of-period parameter usage on dept tabs and driver tabs.
+    def test_parameters_used_outside_valid_period(self) -> None:
+        assumptions = build_assumptions_sheet(
+            [
+                (
+                    "CPP rate",
+                    0.0595,
+                    datetime.date(2026, 1, 1),
+                    datetime.date(2026, 12, 31),
+                    "Published rate",
+                    "CRA T4127",
+                ),
+                (
+                    "CPP rate",
+                    0.0610,
+                    datetime.date(2027, 1, 1),
+                    datetime.date(2027, 12, 31),
+                    "Published rate",
+                    "CRA T4127",
+                ),
+            ]
+        )
+        months = [
+            "Jun 2026", "Jul 2026", "Aug 2026", "Sep 2026", "Oct 2026", "Nov 2026",
+            "Dec 2026", "Jan 2027", "Feb 2027", "Mar 2027", "Apr 2027", "May 2027",
+        ]
+        driver_sheet: dict[str, object] = {"A4": "FT Staff CPP", "B4": 5000}
+        for idx, label in enumerate(months):
+            col_letter = openpyxl.utils.get_column_letter(3 + idx)
+            driver_sheet[f"{col_letter}3"] = label
+        # D4 is Jul 2026 (valid for B6); J4 is Jan 2027 (outside B6).
+        driver_sheet["D4"] = "=B4*Assumptions!$B$6"
+        driver_sheet["J4"] = "=B4*Assumptions!$B$6"
+
+        sheets = {
+            "Assumptions": assumptions,
+            "10-CORP": {
+                "B5": 4000,
+                "C5": "CPI Line",
+                "D5": "=S5*(1+Assumptions!$B$5)",
+                "B14": 6150,
+                "C14": "Employer CPP",
+                # F14 is Jul 2026 (valid for B6); L14 is Jan 2027 (outside B6); P14 uses B7 (valid).
+                "F14": "=D14*Assumptions!$B$6",
+                "L14": "=D14*Assumptions!$B$6",
+                "P14": "=D14*Assumptions!$B$7",
+                # Contiguous out-of-period range L15:N15 (Jan 2027-Mar 2027).
+                "B15": 6151,
+                "C15": "Employer CPP 2",
+                "L15": "=D15*'Assumptions'!$B$6",
+                "M15": "=D15*'Assumptions'!$B$6",
+                "N15": "=D15*'Assumptions'!$B$6",
+            },
+            "CPP EI RRSP": driver_sheet,
+        }
+        with make_workbook(sheets) as (wb_form, wb_val, unused_path):
+            findings = budget_checks.check_parameters(wb_form, wb_val)
+
+        by_loc = {(item["sheet"], item["cell"]): item for item in findings}
+        self.assertEqual(
+            set(by_loc.keys()),
+            {
+                ("10-CORP", "L14"),
+                ("10-CORP", "L15:N15"),
+                ("CPP EI RRSP", "J4"),
+            },
+        )
+        self.assertEqual(by_loc[("10-CORP", "L14")]["severity"], "high")
+        self.assertEqual(by_loc[("10-CORP", "L14")]["code"], 6150)
+        self.assertEqual(by_loc[("10-CORP", "L14")]["line"], "Employer CPP")
+        self.assertIn("Uses CPP rate valid 2026-01-01 to 2026-12-31 for Jan 2027", by_loc[("10-CORP", "L14")]["why"])
+        self.assertIn("Link these months to the CPP rate row that covers them", by_loc[("10-CORP", "L14")]["fix"])
+
+        self.assertEqual(by_loc[("10-CORP", "L15:N15")]["content"], "=D15*'Assumptions'!$B$6")
+        self.assertIn("Jan 2027-Mar 2027", by_loc[("10-CORP", "L15:N15")]["why"])
+
+        self.assertEqual(by_loc[("CPP EI RRSP", "J4")]["line"], "FT Staff CPP")
+        self.assertIn("Jan 2027", by_loc[("CPP EI RRSP", "J4")]["why"])
 
     # (2.7): Consistency checks (grouped COA, text dash, Q != sum(E:P), Consolidated mismatch).
     def test_consistency_checks(self) -> None:
@@ -658,6 +925,54 @@ class BudgetChecksTests(unittest.TestCase):
         self.assertEqual(len(findings), 1)
         self.assertEqual(findings[0]["severity"], "review")
         self.assertIn("Cached values are missing", findings[0]["why"])
+
+    # (2.7c): External workbook links and formula references are flagged in consistency.
+    def test_consistency_external_workbook_links(self) -> None:
+        sheets = {
+            "Chart of Accounts - Accounts": {"A1": 4000},
+            "10-CORP": {
+                "B4": 4000,
+                "C4": "Fees",
+                "D4": 100,
+                "E4": 100,
+                "Q4": 100,
+                "E5": "=[1]Sheet1!A1",
+                "F5": "='[Other.xlsx]Budget'!$B$2",
+            },
+            "11-PRES": {
+                "E4": "='C:\\temp\\[Book.xlsm]Sheet'!A1",
+                "F4": "='C:\\temp\\[Book.xlsm]Sheet'!B1",
+                "G4": "='C:\\temp\\[Book.xlsm]Sheet'!C1",
+                "H4": "='C:\\temp\\[Book.xlsm]Sheet'!D1",
+                "I4": "='C:\\temp\\[Book.xlsm]Sheet'!E1",
+                "J4": "='https://example.com/[Book.xls]Sheet'!F1",
+            },
+            "Consolidated": {
+                "B4": 4000,
+                "C4": "Fees",
+                "D4": 100,
+                "E4": 100,
+                "Q4": 100,
+            },
+        }
+        with make_workbook(sheets) as (wb_form, wb_val, unused_path):
+            wb_form._external_links = [object()]
+            findings = budget_checks.check_consistency(wb_form, wb_val)
+
+        by_sheet = {item["sheet"]: item for item in findings}
+        self.assertIn("(workbook)", by_sheet)
+        self.assertEqual(by_sheet["(workbook)"]["severity"], "high")
+        self.assertIn("another file", by_sheet["(workbook)"]["why"])
+
+        self.assertIn("10-CORP", by_sheet)
+        self.assertEqual(by_sheet["10-CORP"]["severity"], "high")
+        self.assertEqual(by_sheet["10-CORP"]["cell"], "E5, F5")
+        self.assertEqual(by_sheet["10-CORP"]["content"], "=[1]Sheet1!A1")
+        self.assertIn("another file", by_sheet["10-CORP"]["why"])
+
+        self.assertIn("11-PRES", by_sheet)
+        self.assertEqual(by_sheet["11-PRES"]["cell"], "E4, F4, G4, H4, I4")
+        self.assertIn("(+1 more)", by_sheet["11-PRES"]["why"])
 
     # (2.8): Required lines check flags missing or zero-budget mandatory lines.
     def test_required_lines_missing_and_zero(self) -> None:

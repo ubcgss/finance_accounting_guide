@@ -67,34 +67,53 @@ The report has five sections.
 ### Parameters
 
 Parameters are the fixed numbers the budget is built on: contract rents, the
-UBC occupancy charge, honoraria rates, CPI, payroll rates. They live on the
-**Assumptions** tab, one row each, with these columns:
+UBC occupancy charge, honoraria rates, CPI, payroll rates, and the months when
+lumpy payments arrive. They live in one table on the **Assumptions** tab, with
+these columns:
 
 | Column | What goes in it |
 |--------|-----------------|
-| Kind | Setting, Rate, Contract, or Calendar |
-| Basis | Fixed, CPI (inflated each year), or Contract escalator |
-| Source document, Clause | Where the number comes from, e.g. the lease and its clause |
-| Valid from, Valid until | The dates the number applies to |
-| Previous value, Previous valid from, Previous valid until | The number before this one, and its dates |
-| Inflated previous | The previous value inflated by CPI for each year since it started |
-| Owner | Who confirms the number (FO, GM, HFC) |
-| Status | Calculated by Excel; red if something needs attention |
+| Parameter | The name, e.g. "CPP rate" |
+| Value | The number (or months), typed. Never a formula or a link |
+| Status | Calculated by Excel. Don't type here |
+| Valid from, Valid until | The dates the value applies to. Blank means no limit |
+| Basis | Contract, Published rate, HFC decision, CPI, or Estimate |
+| Source | The document and clause, e.g. "2018 Koerner's agreement, cl. 4(2)" |
+| CPI-inflated previous | Calculated: the previous period's value inflated by CPI |
+| Notes | Anything else worth knowing |
 
-The check flags a parameter that:
+The first row, **Fiscal year**, holds the fiscal year's start and end dates.
+Everything else is checked against those dates.
 
-- has no source;
-- stops being valid before the fiscal year ends (for example, payroll rates
-  that change on January 1);
-- starts partway through the year, so the budget line may need two rates;
-- leaves a gap or overlap with its previous period;
-- is based on CPI but doesn't equal the previous value inflated by CPI.
+**One row per period.** When a value changes during the fiscal year, give it
+one row for each period, with the same name. CRA payroll rates change on
+January 1, so CPP rate has a row for 2026 and a row for 2027. Together they
+cover June to May. The budget uses the 2026 row for June to December and the
+2027 row for January to May. At budget time CRA hasn't published next year's
+rates yet, so enter the current rate with Basis **Estimate**. When the real
+rate comes out (usually November), update the value, change Basis to
+**Published rate**, and report the revision to Council.
 
-When a parameter lapses, use **Inflated previous** as the starting point for
-the new value, unless a contract or HFC decision sets it.
+Keep last year's row when a value changes, for example the Council Chair's
+$175 before it became $200. It shows as **History** and is the "previous"
+value for CPI.
 
-The check also lists named ranges that are mentioned but don't exist, and
-parameters that no budget line uses.
+The Status column, and this check, show:
+
+| Status | Severity | Meaning |
+|--------|----------|---------|
+| No source | High | The Source column is blank |
+| Lapses before FY end | High | The value ends before May 31 and no row picks up the next day |
+| Starts mid-year | High | The value starts after June 1 and no row covers the days before |
+| Differs from CPI-inflated previous | High | Basis is CPI, but the value isn't the previous one inflated by CPI |
+| Estimate - confirm | Review | The value is an estimate; replace it when the real one is out |
+| No previous to check | Review | Basis is CPI but there is no earlier row to compare with |
+| History | — | An earlier period, kept for reference |
+| OK | — | Nothing to do |
+
+The check also flags a month that uses a parameter outside its dates (for
+example January 2027 linked to the 2026 CPP row), and parameters that no budget
+line uses.
 
 ### Rolled-forward formulas
 
@@ -124,7 +143,10 @@ by replacing it with the same formula as its neighbours.
 
 Checks that each line's annual amount equals the sum of its months, that every
 account code is in the Chart of Accounts tab, that no dashes were typed in place
-of numbers, and that the Consolidated tab equals the sum of the department tabs.
+of numbers, that the Consolidated tab equals the sum of the department tabs, and
+that no formula links to another workbook. The budget must work on its own: a
+link to another file breaks when that file moves or someone else opens the
+budget.
 
 ### Required lines
 
