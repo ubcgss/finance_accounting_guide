@@ -13,6 +13,7 @@ Welcome to the UBC Graduate Student Society's Finance and Accounting Guide. This
 - [Zoho Usage Guide]({% link docs/zoho-expense/index.md %}) — Expense tracking, project management, and approvals in Zoho
 - [Monthly Task Checklist]({% link docs/monthly-tasks/index.md %}) — Recurring deadlines and responsibilities
 - [Financial Reporting]({% link docs/reporting/index.md %}) — HFC and Council reporting requirements
+- [Finance Tools]({% link docs/tools/index.md %}) — Budget Integrity Check and External Fund Transfer Fee Calculator
 
 ## About This Guide
 

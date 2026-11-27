@@ -44,7 +44,10 @@ heading_anchors: true
 exclude:
   - README.md
   - CLAUDE.md
+  - AGENTS.md
+  - SKILLS.md
   - LICENSE
   - Gemfile.lock
   - node_modules/
+  - tools/
   - vendor/
