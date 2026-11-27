@@ -4,43 +4,23 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>External Fund Transfer Fee Calculator - UBC GSS</title>
+  <link rel="stylesheet" href="calculator-widget.css">
   <style>
-    :root { color-scheme: light dark; --teal:#00797a; --teal-dark:#006162; --bg:#f5f8f8; --card:#fff; --text:#192426; --muted:#526066; --line:#cbd7d9; --soft:#e7f3f3; --warning:#fff5dc; }
-    @media (prefers-color-scheme: dark) { :root { --teal:#39b7b8; --teal-dark:#5ad0d1; --bg:#101718; --card:#172123; --text:#e6eeee; --muted:#b0c0c3; --line:#405154; --soft:#173437; --warning:#3c3018; } }
+    :root { color-scheme: light dark; --teal:#00797a; --teal-dark:#006162; --bg:#f5f8f8; --card:#fff; --text:#192426; --muted:#526066; --line:#cbd7d9; --soft:#e7f3f3; }
+    @media (prefers-color-scheme: dark) {
+      :root, .eft-calc { --teal:#39b7b8; --teal-dark:#5ad0d1; --bg:#101718; --card:#172123; --text:#e6eeee; --muted:#b0c0c3; --line:#405154; --soft:#173437; }
+    }
     * { box-sizing:border-box; }
     body { margin:0; background:var(--bg); color:var(--text); font:16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     main { width:min(900px, calc(100% - 32px)); margin:0 auto; padding:36px 0 56px; }
     .eyebrow { color:var(--teal); font-size:.82rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; margin:0 0 6px; }
     h1 { margin:0 0 10px; font-size:clamp(1.65rem, 4vw, 2.3rem); line-height:1.2; }
-    h2 { font-size:1.15rem; margin:0 0 14px; }
-    .lead, .small { color:var(--muted); }
-    .notice, .card { border:1px solid var(--line); border-radius:12px; background:var(--card); }
-    .notice { background:var(--soft); border-left:4px solid var(--teal); padding:14px 16px; margin:24px 0; }
+    .lead { color:var(--muted); }
+    .notice { border:1px solid var(--line); border-radius:12px; background:var(--soft); border-left:4px solid var(--teal); padding:14px 16px; margin:24px 0; }
     .notice p { margin:0; }
     .notice p + p { margin-top:6px; }
-    .notice a, .help a { color:var(--teal); font-weight:600; }
-    .layout { display:grid; grid-template-columns:minmax(0, 1fr) minmax(280px, .85fr); gap:20px; align-items:start; }
-    .card { padding:22px; box-shadow:0 1px 2px rgb(0 0 0 / 6%); }
-    .fields { display:grid; gap:16px; }
-    label { display:grid; gap:6px; font-weight:650; }
-    input { width:100%; min-height:42px; border:1px solid var(--line); border-radius:7px; padding:8px 10px; color:var(--text); background:var(--card); font:inherit; }
-    input:focus { outline:3px solid color-mix(in srgb, var(--teal) 28%, transparent); border-color:var(--teal); }
-    .checkbox { display:flex; align-items:flex-start; gap:9px; font-weight:500; }
-    .checkbox input { width:18px; min-height:18px; margin-top:3px; accent-color:var(--teal); }
-    .help { margin:0; color:var(--muted); font-size:.875rem; }
-    .section-sub { margin-top:22px; }
-    button { width:100%; margin-top:20px; border:0; border-radius:7px; padding:11px 16px; background:var(--teal); color:#fff; cursor:pointer; font:700 1rem inherit; }
-    button:hover { background:var(--teal-dark); }
-    button:focus-visible { outline:3px solid color-mix(in srgb, var(--teal) 32%, transparent); outline-offset:2px; }
-    button.secondary { background:transparent; border:1px solid var(--teal); color:var(--teal); margin-top:12px; }
-    .error { color:#a61b1b; font-weight:600; min-height:1.5em; margin:14px 0 0; }
-    dl { margin:0; }
-    .fee { display:flex; justify-content:space-between; gap:16px; padding:10px 0; border-bottom:1px solid var(--line); }
-    .fee dt { font-weight:500; }
-    .fee dd { margin:0; font-variant-numeric:tabular-nums; font-weight:700; }
-    .total { margin-top:12px; padding-top:14px; font-size:1.15rem; border-top:2px solid var(--teal); border-bottom:0; }
-    [hidden] { display:none !important; }
-    @media (max-width:700px) { .layout { grid-template-columns:1fr; } main { padding-top:24px; } }
+    .notice a { color:var(--teal); font-weight:600; }
+    @media (max-width:720px) { main { padding-top:24px; } }
   </style>
 </head>
 <body>
@@ -53,272 +33,15 @@
       <p><strong>Policy basis:</strong> <a href="https://gss.ubc.ca/by-laws-code-policies/" target="_blank" rel="noopener noreferrer">House-Finance Policy, Appendix III, section 3 (February 2026)</a>. <a href="../../tools/external-fund-transfer-fees/">View fee guide &amp; Zoho Books procedure</a>.</p>
     </div>
 
-    <div class="layout">
-      <section class="card" aria-labelledby="details-heading">
-        <h2 id="details-heading">Batch details</h2>
-        <form id="calculator-form" class="fields" novalidate>
-          <label>Participating organization name
-            <input id="organization" name="organization" autocomplete="organization" required maxlength="150" placeholder="e.g., Example Graduate Society">
-          </label>
-          <label>Calculation date
-            <input id="calculation-date" name="calculation-date" type="date" required>
-          </label>
-          <label>Transfer value (CAD)
-            <input id="transfer-value" name="transfer-value" type="number" min="0" step="0.01" inputmode="decimal" required placeholder="0.00">
-          </label>
-          <label>Individual payments in this batch
-            <input id="payment-count" name="payment-count" type="number" min="1" step="1" inputmode="numeric" required placeholder="1">
-            <span class="help">The $2 per-payment baseline fee applies to every payment only when the batch has more than 10 payments.</span>
-          </label>
-          <label>CPI adjustment (%)
-            <input id="cpi-adjustment" name="cpi-adjustment" type="number" step="0.01" inputmode="decimal" value="0.00" required>
-            <span class="help">Under <a href="https://gss.ubc.ca/by-laws-code-policies/" target="_blank" rel="noopener noreferrer">HFC Policy Appendix IV</a>, fixed dollar fees adjust each June 1 using the April–March 12-month % change in <a href="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810000401" target="_blank" rel="noopener noreferrer">Vancouver CPI</a>.</span>
-          </label>
-          <label class="checkbox"><input id="annual-fee-due" name="annual-fee-due" type="checkbox"> <span>The organization’s annual fee is due with this batch.</span></label>
-          <button type="submit">Calculate fees</button>
-          <p id="form-error" class="error" role="alert" aria-live="polite"></p>
-        </form>
-      </section>
-
-      <section id="results" class="card" aria-labelledby="results-heading" hidden>
-        <h2 id="results-heading">Administration fee</h2>
-        <dl>
-          <div class="fee"><dt id="annual-fee-label">Annual flat fee</dt><dd id="annual-fee-result"></dd></div>
-          <div class="fee"><dt id="batch-fee-label">Batch transfer fee</dt><dd id="batch-fee-result"></dd></div>
-          <div class="fee"><dt>Transfer processing fee (0.33%)</dt><dd id="processing-fee-result"></dd></div>
-          <div class="fee"><dt id="multi-fee-label">Multi-transfer fee</dt><dd id="multi-fee-result"></dd></div>
-          <div class="fee total"><dt>Total administration fee</dt><dd id="total-fee-result"></dd></div>
-        </dl>
-        <h2 class="section-sub">Net transfer value</h2>
-        <dl>
-          <div class="fee"><dt>Gross transfer value</dt><dd id="gross-transfer-result"></dd></div>
-          <div class="fee"><dt>Less: Total administration fee</dt><dd id="less-fee-result"></dd></div>
-          <div class="fee total"><dt>Net transfer value</dt><dd id="net-transfer-result"></dd></div>
-        </dl>
-        <button id="download-pdf" class="secondary" type="button">Download calculation record (PDF)</button>
-      </section>
-    </div>
+    <div class="eft-calc" data-eft-calculator></div>
   </main>
   <script src="vendor/jspdf.umd.min.js"></script>
   <script type="module">
-    import { FEE_RATES, calculateFees, formatCurrency } from "./fee-calculator.mjs";
+    import { mountFeeCalculator } from "./calculator-widget.mjs";
 
-    const form = document.getElementById("calculator-form");
-    const results = document.getElementById("results");
-    const error = document.getElementById("form-error");
-    const LOGO_URL = "gss-logo-teal.jpg";
-    const fields = {
-      organization: document.getElementById("organization"),
-      calculationDate: document.getElementById("calculation-date"),
-      transferValue: document.getElementById("transfer-value"),
-      paymentCount: document.getElementById("payment-count"),
-      cpiAdjustment: document.getElementById("cpi-adjustment"),
-      annualFeeDue: document.getElementById("annual-fee-due")
-    };
-    let latestCalculation;
-
-    function today() {
-      const now = new Date();
-      const offset = now.getTimezoneOffset();
-      return new Date(now.getTime() - offset * 60_000).toISOString().slice(0, 10);
-    }
-
-    function readCalculation() {
-      const organization = fields.organization.value.trim();
-      const calculationDate = fields.calculationDate.value;
-      const transferValue = fields.transferValue.value;
-      const paymentCount = fields.paymentCount.value;
-      const cpiAdjustment = fields.cpiAdjustment.value;
-      if (!organization) throw new RangeError("Enter the participating organization name.");
-      if (!calculationDate) throw new RangeError("Enter the calculation date.");
-      if (!transferValue) throw new RangeError("Enter the transfer value.");
-      if (!paymentCount) throw new RangeError("Enter the individual payment count.");
-      if (cpiAdjustment === "") throw new RangeError("Enter the CPI adjustment percentage (0.00 if none).");
-      const enteredCpiRate = Number(cpiAdjustment) / 100;
-      return {
-        organization,
-        calculationDate,
-        transferValue: Number(transferValue),
-        paymentCount: Number(paymentCount),
-        cpiRate: enteredCpiRate,
-        annualFeeDue: fields.annualFeeDue.checked
-      };
-    }
-
-    function formatCpiDescription(details, fees) {
-      const pct = (fees.effectiveCpiRate * 100).toFixed(2);
-      if (details.cpiRate < 0) return `${pct}% (0% floor applied to Feb 2026 baseline)`;
-      if (fees.effectiveCpiRate === 0) return `${pct}% (Feb 2026 baseline)`;
-      return `${pct}% (applied to fixed dollar fees)`;
-    }
-
-    function buildFeeLabels(fees) {
-      const adjusted = fees.effectiveCpiRate > 0;
-      return {
-        annual: adjusted ? `Annual flat fee (${formatCurrency(fees.appliedRates.annualFlatFee)})` : "Annual flat fee",
-        batch: adjusted ? `Batch transfer fee (${formatCurrency(fees.appliedRates.batchTransferFee)})` : "Batch transfer fee",
-        multi: adjusted ? `Multi-transfer fee (${formatCurrency(fees.appliedRates.multiTransferFee)} per payment)` : "Multi-transfer fee"
-      };
-    }
-
-    function renderFees(details, fees) {
-      const labels = buildFeeLabels(fees);
-      document.getElementById("annual-fee-label").textContent = labels.annual;
-      document.getElementById("batch-fee-label").textContent = labels.batch;
-      document.getElementById("multi-fee-label").textContent = labels.multi;
-      document.getElementById("annual-fee-result").textContent = formatCurrency(fees.annualFlatFee);
-      document.getElementById("batch-fee-result").textContent = formatCurrency(fees.batchTransferFee);
-      document.getElementById("processing-fee-result").textContent = formatCurrency(fees.transferProcessingFee);
-      document.getElementById("multi-fee-result").textContent = formatCurrency(fees.multiTransferFee);
-      document.getElementById("total-fee-result").textContent = formatCurrency(fees.totalAdministrationFee);
-      document.getElementById("gross-transfer-result").textContent = formatCurrency(details.transferValue);
-      document.getElementById("less-fee-result").textContent = formatCurrency(fees.totalAdministrationFee);
-      document.getElementById("net-transfer-result").textContent = formatCurrency(fees.netTransferValue);
-      results.hidden = false;
-    }
-
-    function safeFilename(value) {
-      return value.replace(/[^a-z0-9]+/gi, "-").replace(/(^-|-$)/g, "").slice(0, 90) || "participating-organization";
-    }
-
-    function loadImage(url) {
-      return new Promise((resolve, reject) => {
-        const image = new Image();
-        image.onload = () => resolve(image);
-        image.onerror = () => reject(new Error("The GSS logo could not be loaded for the PDF."));
-        image.src = url;
-      });
-    }
-
-    function drawSectionHeading(doc, title, y) {
-      doc.setTextColor(0, 121, 122);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(11);
-      doc.text(title, 54, y);
-      doc.setDrawColor(0, 121, 122);
-      doc.setLineWidth(1.0);
-      doc.line(54, y + 6, 558, y + 6);
-      return y + 23;
-    }
-
-    async function downloadPdf() {
-      const { jsPDF } = window.jspdf;
-      const logo = await loadImage(LOGO_URL);
-      const doc = new jsPDF({ unit: "pt", format: "letter" });
-      const details = latestCalculation.details;
-      const fees = latestCalculation.fees;
-      const labels = buildFeeLabels(fees);
-      const feeRows = [
-        [labels.annual, formatCurrency(fees.annualFlatFee)],
-        [labels.batch, formatCurrency(fees.batchTransferFee)],
-        ["Transfer processing fee (0.33%)", formatCurrency(fees.transferProcessingFee)],
-        [labels.multi, formatCurrency(fees.multiTransferFee)],
-        ["Total administration fee", formatCurrency(fees.totalAdministrationFee)]
-      ];
-      const netRows = [
-        ["Gross transfer value", formatCurrency(details.transferValue)],
-        ["Less: Total administration fee", formatCurrency(fees.totalAdministrationFee)],
-        ["Net transfer value", formatCurrency(fees.netTransferValue)]
-      ];
-      let y = 44;
-      doc.addImage(logo, "JPEG", 54, y, 144, 57);
-      y += 84;
-      doc.setTextColor(25, 36, 38);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(18);
-      doc.text("External Fund Transfer Fee Calculation", 54, y);
-      y += 28;
-
-      y = drawSectionHeading(doc, "A. Batch details", y);
-      doc.setTextColor(25, 36, 38);
-      doc.setFontSize(10.5);
-      [
-        ["Participating organization", details.organization],
-        ["Calculation date", details.calculationDate],
-        ["Transfer value", formatCurrency(details.transferValue)],
-        ["Individual payments", String(details.paymentCount)],
-        ["Annual fee due", details.annualFeeDue ? "Yes" : "No"],
-        ["CPI adjustment", formatCpiDescription(details, fees)]
-      ].forEach(([label, value]) => {
-        doc.setFont("helvetica", "bold"); doc.text(`${label}:`, 54, y);
-        doc.setFont("helvetica", "normal"); doc.text(value, 210, y);
-        y += 18;
-      });
-
-      y += 12;
-      y = drawSectionHeading(doc, "B. Administration fee", y);
-      doc.setTextColor(25, 36, 38);
-      doc.setFontSize(10.5);
-      feeRows.forEach(([label, value], index) => {
-        doc.setFont("helvetica", index === feeRows.length - 1 ? "bold" : "normal");
-        doc.text(label, 54, y);
-        doc.text(value, 558, y, { align: "right" });
-        y += 19;
-      });
-
-      y += 12;
-      y = drawSectionHeading(doc, "C. Net transfer value", y);
-      doc.setTextColor(25, 36, 38);
-      doc.setFontSize(10.5);
-      netRows.forEach(([label, value], index) => {
-        doc.setFont("helvetica", index === netRows.length - 1 ? "bold" : "normal");
-        doc.text(label, 54, y);
-        doc.text(value, 558, y, { align: "right" });
-        y += 19;
-      });
-
-      y += 14;
-      doc.setTextColor(25, 36, 38);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(10.5);
-      doc.text("Policy and estimate note", 54, y);
-      y += 15;
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9.2);
-      const note = `Based on ${FEE_RATES.policySource}, with annual June 1 CPI adjustments. This is an internal calculation for one payment batch, not an invoice, approval, tax calculation, or substitute for any required written agreement.`;
-      const noteLines = doc.splitTextToSize(note, 504);
-      doc.text(noteLines, 54, y);
-      y += noteLines.length * 12 + 4;
-
-      const policyPrefix = "GSS By-Laws, Code & Policies:";
-      doc.text(policyPrefix, 54, y);
-      const policyLinkX = 54 + doc.getTextWidth(policyPrefix) + 4;
-      doc.setTextColor(0, 121, 122);
-      doc.textWithLink(FEE_RATES.policyUrl, policyLinkX, y, { url: FEE_RATES.policyUrl });
-      y += 13;
-
-      doc.setTextColor(25, 36, 38);
-      const cpiPrefix = "StatCan Vancouver CPI (Table 18-10-0004-01):";
-      doc.text(cpiPrefix, 54, y);
-      const cpiLinkX = 54 + doc.getTextWidth(cpiPrefix) + 4;
-      doc.setTextColor(0, 121, 122);
-      doc.textWithLink(FEE_RATES.statCanCpiUrl, cpiLinkX, y, { url: FEE_RATES.statCanCpiUrl });
-
-      doc.setDrawColor(203, 215, 217);
-      doc.setLineWidth(0.5);
-      doc.line(54, 718, 558, 718);
-      doc.setTextColor(82, 96, 102);
-      doc.setFontSize(8.5);
-      doc.text("Graduate Student Society UBC Vancouver", 54, 734);
-      doc.text("225-6371 Crescent Road, Vancouver, BC  V6T 1Z2  |  gss.ubc.ca", 54, 747);
-      doc.save(`External Fund Transfer Fee Calculation - ${safeFilename(details.organization)} - ${details.calculationDate}.pdf`);
-    }
-
-    fields.calculationDate.value = today();
-    form.addEventListener("submit", (event) => {
-      event.preventDefault();
-      try {
-        const details = readCalculation();
-        const fees = calculateFees(details);
-        latestCalculation = { details, fees };
-        renderFees(details, fees);
-        error.textContent = "";
-      } catch (exception) {
-        results.hidden = true;
-        error.textContent = exception.message;
-      }
+    mountFeeCalculator(document.querySelector("[data-eft-calculator]"), {
+      logoUrl: "gss-logo-teal.jpg"
     });
-    document.getElementById("download-pdf").addEventListener("click", downloadPdf);
   </script>
 </body>
 </html>

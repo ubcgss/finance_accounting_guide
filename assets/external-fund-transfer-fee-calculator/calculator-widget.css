@@ -1,0 +1,253 @@
+.eft-calc {
+  --teal: #00797a;
+  --teal-dark: #006162;
+  --card: #fff;
+  --text: #192426;
+  --muted: #526066;
+  --line: #cbd7d9;
+  --soft: #e7f3f3;
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 1.5rem 0;
+}
+
+.eft-calc *,
+.eft-calc *::before,
+.eft-calc *::after {
+  box-sizing: border-box;
+}
+
+.eft-calc h2 {
+  margin: 0 0 14px;
+  padding: 0;
+  border: 0;
+  font-family: inherit;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--text);
+}
+
+.eft-calc .layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.9fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.eft-calc .card {
+  margin: 0;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 6%);
+}
+
+.eft-calc .fields {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.eft-calc label {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.eft-calc input {
+  display: block;
+  width: 100%;
+  min-height: 42px;
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--card);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.4;
+  box-shadow: none;
+}
+
+.eft-calc input:focus {
+  outline: 3px solid color-mix(in srgb, var(--teal) 28%, transparent);
+  border-color: var(--teal);
+}
+
+.eft-calc .checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.eft-calc .checkbox input {
+  width: 18px;
+  min-width: 18px;
+  min-height: 18px;
+  height: 18px;
+  margin: 3px 0 0;
+  padding: 0;
+  accent-color: var(--teal);
+  flex-shrink: 0;
+}
+
+.eft-calc .help {
+  margin: 0;
+  padding: 0;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.eft-calc .help a {
+  color: var(--teal);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.eft-calc .help a:hover {
+  color: var(--teal-dark);
+}
+
+.eft-calc .section-sub {
+  margin-top: 22px;
+}
+
+.eft-calc button {
+  display: block;
+  width: 100%;
+  margin: 20px 0 0;
+  padding: 11px 16px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--teal);
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+  text-decoration: none;
+  box-shadow: none;
+  appearance: none;
+}
+
+.eft-calc button:hover {
+  background: var(--teal-dark);
+}
+
+.eft-calc button:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--teal) 32%, transparent);
+  outline-offset: 2px;
+}
+
+.eft-calc button.secondary {
+  background: transparent;
+  border: 1px solid var(--teal);
+  color: var(--teal);
+  margin-top: 12px;
+}
+
+.eft-calc button.secondary:hover {
+  background: var(--soft);
+  color: var(--teal-dark);
+}
+
+.eft-calc .error {
+  color: #a61b1b;
+  font-weight: 600;
+  font-size: 0.95rem;
+  min-height: 1.5em;
+  margin: 14px 0 0;
+  padding: 0;
+}
+
+.eft-calc dl {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.eft-calc .fee {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  margin: 0;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.eft-calc dt {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--text);
+  text-align: left;
+}
+
+.eft-calc dd {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-family: inherit;
+  font-size: inherit;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--text);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.eft-calc .fee.total {
+  margin-top: 12px;
+  padding-top: 14px;
+  font-size: 1.15rem;
+  border-top: 2px solid var(--teal);
+  border-bottom: 0;
+}
+
+.eft-calc .fee.total dt {
+  font-weight: 700;
+}
+
+.eft-calc [hidden] {
+  display: none !important;
+}
+
+@media (max-width: 720px) {
+  .eft-calc .layout {
+    grid-template-columns: 1fr;
+  }
+}
